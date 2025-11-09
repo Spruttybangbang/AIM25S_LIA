@@ -1,0 +1,215 @@
+(base) (.venv) linuslord@Mac AIM25S_LIA % python3 retry_scb_search.py --input manual_matches_20251109_184431.csv --verbose
+
+2025-11-09 21:44:25,807 | INFO | Laddar företag från manual_matches_20251109_184431.csv
+2025-11-09 21:44:25,812 | INFO | Startar körning på 14 företag
+2025-11-09 21:44:25,812 | INFO | Dry-run: False
+2025-11-09 21:44:25,813 | INFO | 
+[1/14] Söker: id=1447 name='Saco'
+2025-11-09 21:44:25,813 | INFO |   Söker med 2 varianter för 'Saco'
+2025-11-09 21:44:25,814 | DEBUG | API Request: https://privateapi.scb.se/nv0101/v1/sokpavar/api/je/HamtaForetag
+2025-11-09 21:44:25,814 | DEBUG | Payload: {'Företagsstatus': '1', 'Registreringsstatus': '1', 'variabler': [{'Varde1': 'Saco', 'Varde2': '', 'Operator': 'Innehaller', 'Variabel': 'Namn'}]}
+2025-11-09 21:44:25,814 | DEBUG | Cert: ../SCB/certifikat/Certifikat_SokPaVar_A00592_2025-10-29_09-27-36Z.pem
+2025-11-09 21:44:29,525 | DEBUG | Response status: 200
+2025-11-09 21:44:30,032 | DEBUG |     'Saco' gav 27 kandidater
+2025-11-09 21:44:30,032 | DEBUG | API Request: https://privateapi.scb.se/nv0101/v1/sokpavar/api/je/HamtaForetag
+2025-11-09 21:44:30,032 | DEBUG | Payload: {'Företagsstatus': '1', 'Registreringsstatus': '1', 'variabler': [{'Varde1': 'SVERIGES AKADEMIKERS CENTRALORGANISATION, SACO', 'Varde2': '', 'Operator': 'Innehaller', 'Variabel': 'Namn'}]}
+2025-11-09 21:44:30,032 | DEBUG | Cert: ../SCB/certifikat/Certifikat_SokPaVar_A00592_2025-10-29_09-27-36Z.pem
+2025-11-09 21:44:36,280 | DEBUG | Response status: 200
+2025-11-09 21:44:36,785 | DEBUG |     'SVERIGES AKADEMIKERS CENTRALORGANISATION, SACO' gav 1 kandidater
+2025-11-09 21:44:36,790 | INFO |   Bästa match: score=91, variant='Saco', företag='SACON AKTIEBOLAG'
+2025-11-09 21:44:36,790 | INFO | ⚠ [LOW SCORE] id=1447 score=91 thresh=92 'Saco' best='SACON AKTIEBOLAG'
+2025-11-09 21:44:36,791 | INFO | 
+[2/14] Söker: id=1134 name='Smartr'
+2025-11-09 21:44:36,791 | INFO |   Söker med 2 varianter för 'Smartr'
+2025-11-09 21:44:36,791 | DEBUG | API Request: https://privateapi.scb.se/nv0101/v1/sokpavar/api/je/HamtaForetag
+2025-11-09 21:44:36,791 | DEBUG | Payload: {'Företagsstatus': '1', 'Registreringsstatus': '1', 'variabler': [{'Varde1': 'Smartr', 'Varde2': '', 'Operator': 'Innehaller', 'Variabel': 'Namn'}]}
+2025-11-09 21:44:36,791 | DEBUG | Cert: ../SCB/certifikat/Certifikat_SokPaVar_A00592_2025-10-29_09-27-36Z.pem
+2025-11-09 21:44:40,200 | DEBUG | Response status: 200
+2025-11-09 21:44:40,705 | DEBUG |     'Smartr' gav 9 kandidater
+2025-11-09 21:44:40,705 | DEBUG | API Request: https://privateapi.scb.se/nv0101/v1/sokpavar/api/je/HamtaForetag
+2025-11-09 21:44:40,706 | DEBUG | Payload: {'Företagsstatus': '1', 'Registreringsstatus': '1', 'variabler': [{'Varde1': 'Smarter AI Sweden AB', 'Varde2': '', 'Operator': 'Innehaller', 'Variabel': 'Namn'}]}
+2025-11-09 21:44:40,706 | DEBUG | Cert: ../SCB/certifikat/Certifikat_SokPaVar_A00592_2025-10-29_09-27-36Z.pem
+2025-11-09 21:44:43,980 | DEBUG | Response status: 200
+2025-11-09 21:44:44,485 | DEBUG |     'Smarter AI Sweden AB' gav 1 kandidater
+2025-11-09 21:44:44,486 | INFO |   Bästa match: score=88, variant='Smartr', företag='Smartrun AB'
+2025-11-09 21:44:44,486 | INFO | ⚠ [LOW SCORE] id=1134 score=88 thresh=92 'Smartr' best='Smartrun AB'
+2025-11-09 21:44:44,487 | INFO | 
+[3/14] Söker: id=1564 name='IBM'
+2025-11-09 21:44:44,487 | INFO |   Söker med 2 varianter för 'IBM'
+2025-11-09 21:44:44,487 | DEBUG | API Request: https://privateapi.scb.se/nv0101/v1/sokpavar/api/je/HamtaForetag
+2025-11-09 21:44:44,487 | DEBUG | Payload: {'Företagsstatus': '1', 'Registreringsstatus': '1', 'variabler': [{'Varde1': 'IBM', 'Varde2': '', 'Operator': 'Innehaller', 'Variabel': 'Namn'}]}
+2025-11-09 21:44:44,487 | DEBUG | Cert: ../SCB/certifikat/Certifikat_SokPaVar_A00592_2025-10-29_09-27-36Z.pem
+2025-11-09 21:44:47,782 | DEBUG | Response status: 200
+2025-11-09 21:44:48,284 | DEBUG |     'IBM' gav 19 kandidater
+2025-11-09 21:44:48,284 | DEBUG | API Request: https://privateapi.scb.se/nv0101/v1/sokpavar/api/je/HamtaForetag
+2025-11-09 21:44:48,284 | DEBUG | Payload: {'Företagsstatus': '1', 'Registreringsstatus': '1', 'variabler': [{'Varde1': 'IBM Svenska Aktiebolag', 'Varde2': '', 'Operator': 'Innehaller', 'Variabel': 'Namn'}]}
+2025-11-09 21:44:48,284 | DEBUG | Cert: ../SCB/certifikat/Certifikat_SokPaVar_A00592_2025-10-29_09-27-36Z.pem
+2025-11-09 21:44:51,603 | DEBUG | Response status: 200
+2025-11-09 21:44:52,109 | DEBUG |     'IBM Svenska Aktiebolag' gav 1 kandidater
+2025-11-09 21:44:52,110 | INFO |   Bästa match: score=88, variant='IBM', företag='IBM USA'
+2025-11-09 21:44:52,111 | INFO | ⚠ [LOW SCORE] id=1564 score=88 thresh=92 'IBM' best='IBM USA'
+2025-11-09 21:44:52,113 | INFO | 
+[4/14] Söker: id=1545 name='SVT'
+2025-11-09 21:44:52,113 | INFO |   Söker med 2 varianter för 'SVT'
+2025-11-09 21:44:52,113 | DEBUG | API Request: https://privateapi.scb.se/nv0101/v1/sokpavar/api/je/HamtaForetag
+2025-11-09 21:44:52,113 | DEBUG | Payload: {'Företagsstatus': '1', 'Registreringsstatus': '1', 'variabler': [{'Varde1': 'SVT', 'Varde2': '', 'Operator': 'Innehaller', 'Variabel': 'Namn'}]}
+2025-11-09 21:44:52,113 | DEBUG | Cert: ../SCB/certifikat/Certifikat_SokPaVar_A00592_2025-10-29_09-27-36Z.pem
+2025-11-09 21:44:55,305 | DEBUG | Response status: 200
+2025-11-09 21:44:55,812 | DEBUG |     'SVT' gav 7 kandidater
+2025-11-09 21:44:55,813 | DEBUG | API Request: https://privateapi.scb.se/nv0101/v1/sokpavar/api/je/HamtaForetag
+2025-11-09 21:44:55,813 | DEBUG | Payload: {'Företagsstatus': '1', 'Registreringsstatus': '1', 'variabler': [{'Varde1': 'Sveriges Television Aktiebolag', 'Varde2': '', 'Operator': 'Innehaller', 'Variabel': 'Namn'}]}
+2025-11-09 21:44:55,813 | DEBUG | Cert: ../SCB/certifikat/Certifikat_SokPaVar_A00592_2025-10-29_09-27-36Z.pem
+2025-11-09 21:44:59,220 | DEBUG | Response status: 200
+2025-11-09 21:44:59,724 | DEBUG |     'Sveriges Television Aktiebolag' gav 1 kandidater
+2025-11-09 21:44:59,725 | INFO |   Bästa match: score=88, variant='SVT', företag='SVTB Holding Aktiebolag'
+2025-11-09 21:44:59,725 | INFO | ⚠ [LOW SCORE] id=1545 score=88 thresh=92 'SVT' best='SVTB Holding Aktiebolag'
+2025-11-09 21:44:59,726 | INFO | 
+[5/14] Söker: id=2194 name='EdMon'
+2025-11-09 21:44:59,726 | INFO |   Söker med 2 varianter för 'EdMon'
+2025-11-09 21:44:59,726 | DEBUG | API Request: https://privateapi.scb.se/nv0101/v1/sokpavar/api/je/HamtaForetag
+2025-11-09 21:44:59,726 | DEBUG | Payload: {'Företagsstatus': '1', 'Registreringsstatus': '1', 'variabler': [{'Varde1': 'EdMon', 'Varde2': '', 'Operator': 'Innehaller', 'Variabel': 'Namn'}]}
+2025-11-09 21:44:59,726 | DEBUG | Cert: ../SCB/certifikat/Certifikat_SokPaVar_A00592_2025-10-29_09-27-36Z.pem
+2025-11-09 21:45:03,445 | DEBUG | Response status: 200
+2025-11-09 21:45:03,951 | DEBUG |     'EdMon' gav 37 kandidater
+2025-11-09 21:45:03,951 | DEBUG | API Request: https://privateapi.scb.se/nv0101/v1/sokpavar/api/je/HamtaForetag
+2025-11-09 21:45:03,951 | DEBUG | Payload: {'Företagsstatus': '1', 'Registreringsstatus': '1', 'variabler': [{'Varde1': 'Edmon Producer AB', 'Varde2': '', 'Operator': 'Innehaller', 'Variabel': 'Namn'}]}
+2025-11-09 21:45:03,951 | DEBUG | Cert: ../SCB/certifikat/Certifikat_SokPaVar_A00592_2025-10-29_09-27-36Z.pem
+2025-11-09 21:45:08,129 | DEBUG | Response status: 200
+2025-11-09 21:45:08,634 | DEBUG |     'Edmon Producer AB' gav 1 kandidater
+2025-11-09 21:45:08,636 | INFO |   Bästa match: score=88, variant='EdMon', företag='Gorie, Edmon'
+2025-11-09 21:45:08,636 | INFO | ⚠ [LOW SCORE] id=2194 score=88 thresh=92 'EdMon' best='Gorie, Edmon'
+2025-11-09 21:45:08,639 | INFO | 
+[6/14] Söker: id=1726 name='PWC'
+2025-11-09 21:45:08,639 | INFO |   Söker med 2 varianter för 'PWC'
+2025-11-09 21:45:08,639 | DEBUG | API Request: https://privateapi.scb.se/nv0101/v1/sokpavar/api/je/HamtaForetag
+2025-11-09 21:45:08,639 | DEBUG | Payload: {'Företagsstatus': '1', 'Registreringsstatus': '1', 'variabler': [{'Varde1': 'PWC', 'Varde2': '', 'Operator': 'Innehaller', 'Variabel': 'Namn'}]}
+2025-11-09 21:45:08,639 | DEBUG | Cert: ../SCB/certifikat/Certifikat_SokPaVar_A00592_2025-10-29_09-27-36Z.pem
+2025-11-09 21:45:12,401 | DEBUG | Response status: 200
+2025-11-09 21:45:12,906 | DEBUG |     'PWC' gav 4 kandidater
+2025-11-09 21:45:12,906 | DEBUG | API Request: https://privateapi.scb.se/nv0101/v1/sokpavar/api/je/HamtaForetag
+2025-11-09 21:45:12,906 | DEBUG | Payload: {'Företagsstatus': '1', 'Registreringsstatus': '1', 'variabler': [{'Varde1': 'PricewaterhouseCoopers i Sverige AB', 'Varde2': '', 'Operator': 'Innehaller', 'Variabel': 'Namn'}]}
+2025-11-09 21:45:12,906 | DEBUG | Cert: ../SCB/certifikat/Certifikat_SokPaVar_A00592_2025-10-29_09-27-36Z.pem
+2025-11-09 21:45:16,581 | DEBUG | Response status: 200
+2025-11-09 21:45:17,083 | DEBUG |     'PricewaterhouseCoopers i Sverige AB' gav 1 kandidater
+2025-11-09 21:45:17,084 | INFO |   Bästa match: score=88, variant='PWC', företag='PWCO AB'
+2025-11-09 21:45:17,084 | INFO | ⚠ [LOW SCORE] id=1726 score=88 thresh=92 'PWC' best='PWCO AB'
+2025-11-09 21:45:17,085 | INFO | 
+[7/14] Söker: id=1346 name='IDC'
+2025-11-09 21:45:17,085 | INFO |   Söker med 2 varianter för 'IDC'
+2025-11-09 21:45:17,085 | DEBUG | API Request: https://privateapi.scb.se/nv0101/v1/sokpavar/api/je/HamtaForetag
+2025-11-09 21:45:17,085 | DEBUG | Payload: {'Företagsstatus': '1', 'Registreringsstatus': '1', 'variabler': [{'Varde1': 'IDC', 'Varde2': '', 'Operator': 'Innehaller', 'Variabel': 'Namn'}]}
+2025-11-09 21:45:17,085 | DEBUG | Cert: ../SCB/certifikat/Certifikat_SokPaVar_A00592_2025-10-29_09-27-36Z.pem
+2025-11-09 21:45:20,606 | DEBUG | Response status: 200
+2025-11-09 21:45:21,122 | DEBUG |     'IDC' gav 289 kandidater
+2025-11-09 21:45:21,123 | DEBUG | API Request: https://privateapi.scb.se/nv0101/v1/sokpavar/api/je/HamtaForetag
+2025-11-09 21:45:21,123 | DEBUG | Payload: {'Företagsstatus': '1', 'Registreringsstatus': '1', 'variabler': [{'Varde1': 'IDC Nordic A/S', 'Varde2': '', 'Operator': 'Innehaller', 'Variabel': 'Namn'}]}
+2025-11-09 21:45:21,123 | DEBUG | Cert: ../SCB/certifikat/Certifikat_SokPaVar_A00592_2025-10-29_09-27-36Z.pem
+2025-11-09 21:45:24,714 | DEBUG | Response status: 200
+2025-11-09 21:45:25,218 | DEBUG |     'IDC Nordic A/S' gav 1 kandidater
+2025-11-09 21:45:25,230 | INFO |   Bästa match: score=88, variant='IDC', företag='IDCL INC AB'
+2025-11-09 21:45:25,231 | INFO | ⚠ [LOW SCORE] id=1346 score=88 thresh=92 'IDC' best='IDCL INC AB'
+2025-11-09 21:45:25,231 | INFO | 
+[8/14] Söker: id=1389 name='Zooma'
+2025-11-09 21:45:25,232 | INFO |   Söker med 2 varianter för 'Zooma'
+2025-11-09 21:45:25,232 | DEBUG | API Request: https://privateapi.scb.se/nv0101/v1/sokpavar/api/je/HamtaForetag
+2025-11-09 21:45:25,232 | DEBUG | Payload: {'Företagsstatus': '1', 'Registreringsstatus': '1', 'variabler': [{'Varde1': 'Zooma', 'Varde2': '', 'Operator': 'Innehaller', 'Variabel': 'Namn'}]}
+2025-11-09 21:45:25,232 | DEBUG | Cert: ../SCB/certifikat/Certifikat_SokPaVar_A00592_2025-10-29_09-27-36Z.pem
+2025-11-09 21:45:28,510 | DEBUG | Response status: 200
+2025-11-09 21:45:29,011 | DEBUG |     'Zooma' gav 7 kandidater
+2025-11-09 21:45:29,011 | DEBUG | API Request: https://privateapi.scb.se/nv0101/v1/sokpavar/api/je/HamtaForetag
+2025-11-09 21:45:29,011 | DEBUG | Payload: {'Företagsstatus': '1', 'Registreringsstatus': '1', 'variabler': [{'Varde1': 'Zooma Agency AB', 'Varde2': '', 'Operator': 'Innehaller', 'Variabel': 'Namn'}]}
+2025-11-09 21:45:29,011 | DEBUG | Cert: ../SCB/certifikat/Certifikat_SokPaVar_A00592_2025-10-29_09-27-36Z.pem
+2025-11-09 21:45:32,291 | DEBUG | Response status: 200
+2025-11-09 21:45:32,797 | DEBUG |     'Zooma Agency AB' gav 1 kandidater
+2025-11-09 21:45:32,797 | INFO |   Bästa match: score=87, variant='Zooma', företag='Zooma Agency AB'
+2025-11-09 21:45:32,797 | INFO | ⚠ [LOW SCORE] id=1389 score=87 thresh=92 'Zooma' best='Zooma Agency AB'
+2025-11-09 21:45:32,798 | INFO | 
+[9/14] Söker: id=1322 name='Volvo Group'
+2025-11-09 21:45:32,798 | INFO |   Söker med 2 varianter för 'Volvo Group'
+2025-11-09 21:45:32,798 | DEBUG | API Request: https://privateapi.scb.se/nv0101/v1/sokpavar/api/je/HamtaForetag
+2025-11-09 21:45:32,798 | DEBUG | Payload: {'Företagsstatus': '1', 'Registreringsstatus': '1', 'variabler': [{'Varde1': 'Volvo Group', 'Varde2': '', 'Operator': 'Innehaller', 'Variabel': 'Namn'}]}
+2025-11-09 21:45:32,798 | DEBUG | Cert: ../SCB/certifikat/Certifikat_SokPaVar_A00592_2025-10-29_09-27-36Z.pem
+2025-11-09 21:45:36,396 | DEBUG | Response status: 200
+2025-11-09 21:45:36,901 | DEBUG |     'Volvo Group' gav 10 kandidater
+2025-11-09 21:45:36,901 | DEBUG | API Request: https://privateapi.scb.se/nv0101/v1/sokpavar/api/je/HamtaForetag
+2025-11-09 21:45:36,901 | DEBUG | Payload: {'Företagsstatus': '1', 'Registreringsstatus': '1', 'variabler': [{'Varde1': 'Volvo Car Sverige Aktiebolag', 'Varde2': '', 'Operator': 'Innehaller', 'Variabel': 'Namn'}]}
+2025-11-09 21:45:36,901 | DEBUG | Cert: ../SCB/certifikat/Certifikat_SokPaVar_A00592_2025-10-29_09-27-36Z.pem
+2025-11-09 21:45:40,381 | DEBUG | Response status: 200
+2025-11-09 21:45:40,884 | DEBUG |     'Volvo Car Sverige Aktiebolag' gav 1 kandidater
+2025-11-09 21:45:40,885 | INFO |   Bästa match: score=91, variant='Volvo Car Sverige Aktiebolag', företag='Volvo Car Sverige Aktiebolag'
+2025-11-09 21:45:40,885 | INFO | ⚠ [LOW SCORE] id=1322 score=91 thresh=92 'Volvo Group' best='Volvo Car Sverige Aktiebolag'
+2025-11-09 21:45:40,886 | INFO | 
+[10/14] Söker: id=1321 name='Svea AI'
+2025-11-09 21:45:40,886 | INFO |   Söker med 2 varianter för 'Svea AI'
+2025-11-09 21:45:40,886 | DEBUG | API Request: https://privateapi.scb.se/nv0101/v1/sokpavar/api/je/HamtaForetag
+2025-11-09 21:45:40,886 | DEBUG | Payload: {'Företagsstatus': '1', 'Registreringsstatus': '1', 'variabler': [{'Varde1': 'Svea AI', 'Varde2': '', 'Operator': 'Innehaller', 'Variabel': 'Namn'}]}
+2025-11-09 21:45:40,886 | DEBUG | Cert: ../SCB/certifikat/Certifikat_SokPaVar_A00592_2025-10-29_09-27-36Z.pem
+2025-11-09 21:45:44,272 | DEBUG | Response status: 200
+2025-11-09 21:45:44,777 | DEBUG |     'Svea AI' gav 1 kandidater
+2025-11-09 21:45:44,778 | DEBUG | API Request: https://privateapi.scb.se/nv0101/v1/sokpavar/api/je/HamtaForetag
+2025-11-09 21:45:44,778 | DEBUG | Payload: {'Företagsstatus': '1', 'Registreringsstatus': '1', 'variabler': [{'Varde1': 'Svea AI Technology AB', 'Varde2': '', 'Operator': 'Innehaller', 'Variabel': 'Namn'}]}
+2025-11-09 21:45:44,778 | DEBUG | Cert: ../SCB/certifikat/Certifikat_SokPaVar_A00592_2025-10-29_09-27-36Z.pem
+2025-11-09 21:45:48,163 | DEBUG | Response status: 200
+2025-11-09 21:45:48,667 | DEBUG |     'Svea AI Technology AB' gav 1 kandidater
+2025-11-09 21:45:48,667 | INFO |   Bästa match: score=86, variant='Svea AI', företag='Svea AI Technology AB'
+2025-11-09 21:45:48,667 | INFO | ⚠ [LOW SCORE] id=1321 score=86 thresh=88 'Svea AI' best='Svea AI Technology AB'
+2025-11-09 21:45:48,668 | INFO | 
+[11/14] Söker: id=2043 name='Saab AB'
+2025-11-09 21:45:48,668 | INFO |   Söker med 2 varianter för 'Saab AB'
+2025-11-09 21:45:48,668 | DEBUG | API Request: https://privateapi.scb.se/nv0101/v1/sokpavar/api/je/HamtaForetag
+2025-11-09 21:45:48,668 | DEBUG | Payload: {'Företagsstatus': '1', 'Registreringsstatus': '1', 'variabler': [{'Varde1': 'Saab AB', 'Varde2': '', 'Operator': 'Innehaller', 'Variabel': 'Namn'}]}
+2025-11-09 21:45:48,668 | DEBUG | Cert: ../SCB/certifikat/Certifikat_SokPaVar_A00592_2025-10-29_09-27-36Z.pem
+2025-11-09 21:45:52,262 | DEBUG | Response status: 200
+2025-11-09 21:45:52,767 | DEBUG |     'Saab AB' gav 3 kandidater
+2025-11-09 21:45:52,767 | DEBUG | Cache hit för 'SAAB Aktiebolag'
+2025-11-09 21:45:52,767 | DEBUG |     'SAAB Aktiebolag' gav 3 kandidater
+2025-11-09 21:45:52,768 | INFO |   Bästa match: score=84, variant='SAAB Aktiebolag', företag='Insaab AB'
+2025-11-09 21:45:52,768 | INFO | ⚠ [LOW SCORE] id=2043 score=84 thresh=92 'Saab AB' best='Insaab AB'
+2025-11-09 21:45:52,769 | INFO | 
+[12/14] Söker: id=2048 name='Preem AB'
+2025-11-09 21:45:52,769 | INFO |   Söker med 2 varianter för 'Preem AB'
+2025-11-09 21:45:52,769 | DEBUG | API Request: https://privateapi.scb.se/nv0101/v1/sokpavar/api/je/HamtaForetag
+2025-11-09 21:45:52,769 | DEBUG | Payload: {'Företagsstatus': '1', 'Registreringsstatus': '1', 'variabler': [{'Varde1': 'Preem AB', 'Varde2': '', 'Operator': 'Innehaller', 'Variabel': 'Namn'}]}
+2025-11-09 21:45:52,769 | DEBUG | Cert: ../SCB/certifikat/Certifikat_SokPaVar_A00592_2025-10-29_09-27-36Z.pem
+2025-11-09 21:45:56,256 | DEBUG | Response status: 200
+2025-11-09 21:45:56,762 | DEBUG |     'Preem AB' gav 2 kandidater
+2025-11-09 21:45:56,763 | DEBUG | Cache hit för 'Preem Aktiebolag'
+2025-11-09 21:45:56,763 | DEBUG |     'Preem Aktiebolag' gav 2 kandidater
+2025-11-09 21:45:56,764 | INFO |   Bästa match: score=82, variant='Preem Aktiebolag', företag='Bensinstation Preem AB'
+2025-11-09 21:45:56,764 | INFO | ⚠ [LOW SCORE] id=2048 score=82 thresh=92 'Preem AB' best='Bensinstation Preem AB'
+2025-11-09 21:45:56,765 | INFO | 
+[13/14] Söker: id=1617 name='Riksidrottsförbundet'
+2025-11-09 21:45:56,765 | INFO |   Söker med 2 varianter för 'Riksidrottsförbundet'
+2025-11-09 21:45:56,765 | DEBUG | API Request: https://privateapi.scb.se/nv0101/v1/sokpavar/api/je/HamtaForetag
+2025-11-09 21:45:56,765 | DEBUG | Payload: {'Företagsstatus': '1', 'Registreringsstatus': '1', 'variabler': [{'Varde1': 'Riksidrottsförbundet', 'Varde2': '', 'Operator': 'Innehaller', 'Variabel': 'Namn'}]}
+2025-11-09 21:45:56,765 | DEBUG | Cert: ../SCB/certifikat/Certifikat_SokPaVar_A00592_2025-10-29_09-27-36Z.pem
+2025-11-09 21:46:00,247 | DEBUG | Response status: 200
+2025-11-09 21:46:00,753 | DEBUG |     'Riksidrottsförbundet' gav 1 kandidater
+2025-11-09 21:46:00,753 | DEBUG | API Request: https://privateapi.scb.se/nv0101/v1/sokpavar/api/je/HamtaForetag
+2025-11-09 21:46:00,753 | DEBUG | Payload: {'Företagsstatus': '1', 'Registreringsstatus': '1', 'variabler': [{'Varde1': 'SVERIGES RIKSIDROTTSFÖRBUND', 'Varde2': '', 'Operator': 'Innehaller', 'Variabel': 'Namn'}]}
+2025-11-09 21:46:00,753 | DEBUG | Cert: ../SCB/certifikat/Certifikat_SokPaVar_A00592_2025-10-29_09-27-36Z.pem
+2025-11-09 21:46:04,958 | DEBUG | Response status: 200
+2025-11-09 21:46:05,464 | DEBUG |     'SVERIGES RIKSIDROTTSFÖRBUND' gav 1 kandidater
+2025-11-09 21:46:05,465 | INFO |   Bästa match: score=82, variant='SVERIGES RIKSIDROTTSFÖRBUND', företag='SVERIGES RIKSIDROTTSFÖRBUND'
+2025-11-09 21:46:05,465 | INFO | ⚠ [LOW SCORE] id=1617 score=82 thresh=85 'Riksidrottsförbundet' best='SVERIGES RIKSIDROTTSFÖRBUND'
+2025-11-09 21:46:05,466 | INFO | 
+[14/14] Söker: id=1614 name='Stena AB'
+2025-11-09 21:46:05,466 | INFO |   Söker med 2 varianter för 'Stena AB'
+2025-11-09 21:46:05,466 | DEBUG | API Request: https://privateapi.scb.se/nv0101/v1/sokpavar/api/je/HamtaForetag
+2025-11-09 21:46:05,466 | DEBUG | Payload: {'Företagsstatus': '1', 'Registreringsstatus': '1', 'variabler': [{'Varde1': 'Stena AB', 'Varde2': '', 'Operator': 'Innehaller', 'Variabel': 'Namn'}]}
+2025-11-09 21:46:05,466 | DEBUG | Cert: ../SCB/certifikat/Certifikat_SokPaVar_A00592_2025-10-29_09-27-36Z.pem
+2025-11-09 21:46:10,181 | DEBUG | Response status: 200
+2025-11-09 21:46:10,687 | DEBUG |     'Stena AB' gav 63 kandidater
+2025-11-09 21:46:10,688 | DEBUG | Cache hit för 'Stena Aktiebolag'
+2025-11-09 21:46:10,688 | DEBUG |     'Stena Aktiebolag' gav 63 kandidater
+2025-11-09 21:46:10,695 | INFO |   Bästa match: score=76, variant='Stena Aktiebolag', företag='Investena AB'
+2025-11-09 21:46:10,695 | INFO | ⚠ [LOW SCORE] id=1614 score=76 thresh=92 'Stena AB' best='Investena AB'
+2025-11-09 21:46:10,700 | INFO | Issues exporterade till: /Users/linuslord/python/AIM25S/Discord/AIM25S_LIA/retry_scb_issues.csv
+2025-11-09 21:46:10,700 | INFO | 
+2025-11-09 21:46:10,700 | INFO | === SLUTSTATISTIK ===
+2025-11-09 21:46:10,700 | INFO | Uppdaterade: 0
+2025-11-09 21:46:10,700 | INFO | Låg score: 14
+2025-11-09 21:46:10,700 | INFO | Inget resultat: 0
+2025-11-09 21:46:10,700 | INFO | API-fel: 0
+2025-11-09 21:46:10,700 | INFO | Total: 14
+(base) (.venv) linuslord@Mac AIM25S_LIA % 

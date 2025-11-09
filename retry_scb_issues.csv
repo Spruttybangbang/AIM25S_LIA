@@ -5,6 +5,15 @@ id,name,reason,score,best_candidate,PostOrt,variant_used
 1166,TecPoint,no_candidates,,,,
 1190,Happy42,no_candidates,,,,
 1202,Sentian.ai,no_candidates,,,,
-1212,Weather Labs,no_candidates,,,,
+1212,Weather Labs,low_score,68,No bad weather AB,MÖLNDAL,Weather Aktiebolag
 1222,Videquus AB,no_candidates,,,,
 1227,Oterlu,no_candidates,,,,
+1231,Childhood - Stella Polaris,low_score,70,Childhood Dreams AB,LJUNGSKILE,Childhood Aktiebolag
+1241,Women in AI,low_score,81,WOMEN IN TECH SWEDEN ASSOCIATION,SKARPNÄCK,Women AB
+1243,Wavr Tech AB (publ),no_candidates,,,,
+1254,DataForce by TransPerfect,no_candidates,,,,
+1266,BootstrapLabs,no_candidates,,,,
+1271,Softhouse Consulting,no_candidates,,,,
+1273,Boston Global Forum,low_score,84,Boston Group AB,LINGHEM,Boston Aktiebolag
+1280,Aicavity Analytics,no_candidates,,,,
+1306,CEVT AB,no_candidates,,,,
