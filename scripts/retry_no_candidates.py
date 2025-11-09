@@ -13,7 +13,7 @@ def load_no_candidates():
     """Laddar företag utan kandidater"""
     no_candidates_df = pd.read_csv('analysis_no_candidates.csv')
 
-    conn = sqlite3.connect('ai_companies.db')
+    conn = sqlite3.connect('../../ai_companies.db')
     companies_df = pd.read_sql_query("""
         SELECT id, name, website, description, location_city
         FROM companies
@@ -275,7 +275,7 @@ def export_categories(categories: Dict[str, pd.DataFrame]):
 
     for category_name, df in categories.items():
         if len(df) > 0:
-            filename = f"no_candidates_{category_name}.csv"
+            filename = f"../results/no_candidates_{category_name}.csv"
             df.to_csv(filename, index=False)
             print(f"✅ {filename} ({len(df)} st)")
 

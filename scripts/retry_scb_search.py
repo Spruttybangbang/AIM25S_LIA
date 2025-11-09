@@ -39,8 +39,8 @@ except ImportError:
 # KONFIGURATION (SAMMA SOM scb_integration_v2.py)
 # ============================================================================
 
-DEFAULT_DB = "ai_companies.db"
-DEFAULT_CERT = "../SCB/certifikat/Certifikat_SokPaVar_A00592_2025-10-29_09-27-36Z.pem"
+DEFAULT_DB = "../ai_companies.db"
+DEFAULT_CERT = "../../SCB/certifikat/Certifikat_SokPaVar_A00592_2025-10-29_09-27-36Z.pem"
 API_URL = "https://privateapi.scb.se/nv0101/v1/sokpavar/api/je/HamtaForetag"
 TIMEOUT_SEC = 30
 RATE_LIMIT_DELAY = 0.5
@@ -435,7 +435,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--input", default="no_candidates_need_review.csv", help="CSV med företag att söka")
     parser.add_argument("--min-score", type=int, default=BASE_FUZZY_THRESHOLD, help="Min fuzzy-score för match")
     parser.add_argument("--dry-run", action="store_true", help="Skriv inte till DB")
-    parser.add_argument("--issues-csv", type=str, default="retry_scb_issues.csv", help="Exportera problemfall")
+    parser.add_argument("--issues-csv", type=str, default="../results/retry_scb_issues.csv", help="Exportera problemfall")
     parser.add_argument("--verbose", action="store_true", help="Mer loggning")
     parser.add_argument("--limit", type=int, default=None, help="Max antal företag att köra")
 

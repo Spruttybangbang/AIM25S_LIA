@@ -96,8 +96,8 @@ def import_manual_matches(
 
 def main():
     parser = argparse.ArgumentParser(description="Importera manuella matchningar direkt från CSV")
-    parser.add_argument("--csv", default="manual_matches_20251109_184431.csv", help="CSV med manuella matchningar")
-    parser.add_argument("--db", default="ai_companies.db", help="Databas")
+    parser.add_argument("--csv", default="manual_matches_20251109_184431../results/.csv", help="CSV med manuella matchningar")
+    parser.add_argument("--db", default="../ai_companies.db", help="Databas")
     parser.add_argument("--dry-run", action="store_true", help="Testkörning utan att skriva till DB")
 
     args = parser.parse_args()

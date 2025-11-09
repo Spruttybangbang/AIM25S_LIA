@@ -95,9 +95,9 @@ def import_manual_matches(
 
 def main():
     parser = argparse.ArgumentParser(description="Importera manuella matchningar till databasen")
-    parser.add_argument("--csv", default="manual_matches_20251109_184431.csv", help="CSV med manuella matchningar")
-    parser.add_argument("--db", default="ai_companies.db", help="Databas")
-    parser.add_argument("--cert", default="../SCB/certifikat/Certifikat_SokPaVar_A00592_2025-10-29_09-27-36Z.pem", help="Certifikat")
+    parser.add_argument("--csv", default="manual_matches_20251109_184431../results/.csv", help="CSV med manuella matchningar")
+    parser.add_argument("--db", default="../ai_companies.db", help="Databas")
+    parser.add_argument("--cert", default="../../SCB/certifikat/Certifikat_SokPaVar_A00592_2025-10-29_09-27-36Z.pem", help="Certifikat")
     parser.add_argument("--dry-run", action="store_true", help="Testkörning utan att skriva till DB")
     parser.add_argument("--verbose", action="store_true", help="Verbose loggning")
 
