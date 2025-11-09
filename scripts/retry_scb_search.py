@@ -7,6 +7,7 @@ Använder samma API-metod som scb_integration_v2.py
 from __future__ import annotations
 
 import argparse
+import configparser
 import csv
 import json
 import logging
@@ -39,8 +40,34 @@ except ImportError:
 # KONFIGURATION (SAMMA SOM scb_integration_v2.py)
 # ============================================================================
 
-DEFAULT_DB = "../ai_companies.db"
-DEFAULT_CERT = "../../SCB/certifikat/Certifikat_SokPaVar_A00592_2025-10-29_09-27-36Z.pem"
+# Logger setup (must be before load_config)
+logger = logging.getLogger("retry_scb_search")
+handler = logging.StreamHandler(sys.stdout)
+handler.setFormatter(logging.Formatter("%(asctime)s | %(levelname)s | %(message)s"))
+logger.addHandler(handler)
+logger.setLevel(logging.INFO)
+
+def load_config():
+    """Load configuration from config.ini or use defaults"""
+    config = configparser.ConfigParser()
+    config_path = Path(__file__).parent.parent / "config.ini"
+
+    # Defaults (used if config.ini doesn't exist)
+    default_db = "../ai_companies.db"
+    default_cert = "../../SCB/certifikat/Certifikat_SokPaVar_A00592_2025-10-29_09-27-36Z.pem"
+
+    if config_path.exists():
+        config.read(config_path)
+        db_path = config.get('SCB', 'database_path', fallback=default_db)
+        cert_path = config.get('SCB', 'cert_path', fallback=default_cert)
+    else:
+        logger.warning(f"Config file not found at {config_path}, using defaults")
+        db_path = default_db
+        cert_path = default_cert
+
+    return db_path, cert_path
+
+DEFAULT_DB, DEFAULT_CERT = load_config()
 API_URL = "https://privateapi.scb.se/nv0101/v1/sokpavar/api/je/HamtaForetag"
 TIMEOUT_SEC = 30
 RATE_LIMIT_DELAY = 0.5
@@ -48,13 +75,6 @@ MAX_TOTAL_RETRIES = 5
 BACKOFF_FACTOR = 0.5
 STATUS_FORCELIST = (429, 500, 502, 503, 504)
 BASE_FUZZY_THRESHOLD = 85
-
-# Logger setup
-logger = logging.getLogger("retry_scb_search")
-handler = logging.StreamHandler(sys.stdout)
-handler.setFormatter(logging.Formatter("%(asctime)s | %(levelname)s | %(message)s"))
-logger.addHandler(handler)
-logger.setLevel(logging.INFO)
 
 
 # ============================================================================
