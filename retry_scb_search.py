@@ -156,9 +156,9 @@ def dynamic_threshold(raw_name: str, base: int = BASE_FUZZY_THRESHOLD) -> int:
     """Högre krav för korta namn"""
     L = len(normalize_company_name(raw_name))
     if L <= 6:
-        return max(base, 92)
+        return max(base, 85)  # Sänkt från 92 till 85
     if L <= 10:
-        return max(base, 88)
+        return max(base, 85)  # Sänkt från 88 till 85
     return base
 
 
@@ -285,11 +285,14 @@ def search_with_variants(
     name: str,
     search_variants: List[str],
     cert,
-    min_score: int
+    min_score: int,
+    correct_scb_name: Optional[str] = None
 ) -> Tuple[Optional[dict], int, str]:
     """
     Sök med originalnamn först, sedan prova alla search_variants
     Returnerar (best_match, score, variant_used)
+
+    Om correct_scb_name finns, prioritera exact match mot det namnet.
     """
     all_candidates = []
     variants_to_try = [name] + [v for v in search_variants if v != name]
@@ -316,7 +319,21 @@ def search_with_variants(
         logger.info(f"  Inga kandidater hittades med någon variant")
         return None, 0, ""
 
-    # Hitta bästa match över alla kandidater från alla varianter
+    # Om correct_scb_name finns, försök hitta exact/near-exact match först
+    if correct_scb_name:
+        correct_normalized = normalize_company_name(correct_scb_name)
+        for candidate in all_candidates:
+            scb_name = candidate.get("Företagsnamn", "")
+            scb_normalized = normalize_company_name(scb_name)
+
+            # Exact match eller mycket hög likhet
+            exact_score = score_names(correct_normalized, scb_normalized)
+            if exact_score >= 90:  # Mycket hög match mot correct_scb_name
+                variant_used = candidate.get('_search_variant', name)
+                logger.info(f"  Exact match mot correct_scb_name: score={exact_score}, företag='{scb_name}'")
+                return candidate, exact_score, variant_used
+
+    # Annars hitta bästa match över alla kandidater från alla varianter
     best_match, best_score = find_best_match(name, all_candidates)
 
     if best_match:
@@ -474,6 +491,8 @@ def main(argv: Optional[List[str]] = None) -> int:
 
         # Parsa search_variants från CSV (kan vara string eller redan lista)
         search_variants = []
+        correct_scb_name = None
+
         if 'search_variants' in row and pd.notna(row['search_variants']):
             variants_raw = row['search_variants']
             if isinstance(variants_raw, str):
@@ -484,16 +503,21 @@ def main(argv: Optional[List[str]] = None) -> int:
                     search_variants = []
             elif isinstance(variants_raw, list):
                 search_variants = variants_raw
-        elif 'correct_scb_name' in row and pd.notna(row['correct_scb_name']):
-            # Fallback: använd correct_scb_name om search_variants saknas
-            correct_name = row['correct_scb_name'].split('(')[0].strip()
-            search_variants = [correct_name]
+
+        # Kolla om correct_scb_name finns (för exact matching)
+        if 'correct_scb_name' in row and pd.notna(row['correct_scb_name']):
+            correct_scb_name = row['correct_scb_name'].split('(')[0].strip()
+            # Om search_variants är tom, använd correct_scb_name
+            if not search_variants:
+                search_variants = [correct_scb_name]
 
         logger.info(f"\n[{idx+1}/{len(df)}] Söker: id={company_id} name='{name}'")
+        if correct_scb_name:
+            logger.info(f"  Correct SCB name: '{correct_scb_name}'")
 
         # Sök med alla varianter
         match, score, variant_used = search_with_variants(
-            company_id, name, search_variants, cert, args.min_score
+            company_id, name, search_variants, cert, args.min_score, correct_scb_name
         )
 
         threshold = max(args.min_score, dynamic_threshold(name, base=args.min_score))
