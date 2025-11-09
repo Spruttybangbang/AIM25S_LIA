@@ -17,3 +17,132 @@ id,name,reason,score,best_candidate,PostOrt,variant_used
 1273,Boston Global Forum,low_score,84,Boston Group AB,LINGHEM,Boston Aktiebolag
 1280,Aicavity Analytics,no_candidates,,,,
 1306,CEVT AB,no_candidates,,,,
+1311,Neodev,no_candidates,,,,
+1313,Ionic Consulting AB,no_candidates,,,,
+1314,"Women in Data Science, AI & ML Sweden",low_score,65,WOMEN IN TECH SWEDEN ASSOCIATION,SKARPNÄCK,Women AB
+1320,anch.AI,low_score,50,anch.AI AB,STOCKHOLM,anch AB
+1335,Lindholmen Science Park AB,low_score,71,OLH Lindholmen AB,STOCKHOLM,Lindholmen Aktiebolag
+1355,NearbyStore - Autonomus Grocery stores,no_candidates,,,,
+1356,Ethical AI Governance GGroup (EAIGG),no_candidates,,,,
+1364,"QuantumBlack, AI by McKinsey",no_candidates,,,,
+1371,The Farama Foundation,no_candidates,,,,
+1387,Aito.AI,no_candidates,,,,
+1388,MEM.AI,no_candidates,,,,
+1405,Dell Technologies,low_score,81,DELL AKTIEBOLAG,SOLNA,Dell AB
+1419,Decerno AB,no_candidates,,,,
+1421,Ledarna – Sveriges chefsorganisation,low_score,80,LEDARNA,STOCKHOLM,Ledarna Aktiebolag
+1435,Responsr,no_candidates,,,,
+1451,Stockholm Chamber of Commerce,low_score,71,BR STOCKHOLM AKTIEBOLAG,FARSTA,Stockholm
+1454,Kungl. IngenjörsVetenskapsAkademien (IVA),no_candidates,,,,
+1460,Aidoc,no_candidates,,,,
+1472,Thesamurai,no_candidates,,,,
+1475,Daresay by Knightec,no_candidates,,,,
+1490,WOWEN,no_candidates,,,,
+1505,MinnaLearn,no_candidates,,,,
+1506,Synai,no_candidates,,,,
+1511,Semanttic AB,no_candidates,,,,
+1514,Swedish Red Cross,low_score,65,Swedish Abrasives Aktiebolag,JÖNKÖPING,Swedish
+1515,DigJourney,no_candidates,,,,
+1521,Internetstiftelsen,no_candidates,,,,
+1528,Hub France IA,no_candidates,,,,
+1550,Mindact.ai,no_candidates,,,,
+1566,ChatGPTiSkolan,no_candidates,,,,
+1571,Natur & Kultur,low_score,76,Ösjöfors kultur och natur AB,RÖNNINGE,Natur
+1573,EY (Ernst & Young),low_score,58,Manley Adventum Touring AB,HYSSNA,EY AB
+1575,Skrypt AB,no_candidates,,,,
+1576,Icebreaker.vc,no_candidates,,,,
+1580,Impatient AB,no_candidates,,,,
+1582,anavid,no_candidates,,,,
+1589,MoogleLabs,no_candidates,,,,
+1601,M.O.A.A. Consulting AB,no_candidates,,,,
+1602,Appalume AB,no_candidates,,,,
+1604,Appalume AB,no_candidates,,,,
+1609,Lunicore Student Consulting,no_candidates,,,,
+1610,Unity Health Toronto,low_score,66,V.Unity AB,UPPSALA,Unity Aktiebolag
+1611,EdAider,no_candidates,,,,
+1629,Botli.fi,no_candidates,,,,
+1640,IvoryTower Consulting,no_candidates,,,,
+1641,ChatHelp.ai,no_candidates,,,,
+1659,Upplands-AI AB,no_candidates,,,,
+1662,Jens Kofoed Hansen,low_score,42,SweJens AB,JOHANNESHOV,Jens
+1670,Maverick at Nexer AB,low_score,72,Maverick Management AB,MALMÖ,Maverick AB
+1681,Bilfinger Engineering and Maintenance,no_candidates,,,,
+1686,Sjö&Hav Outdoor Care (Sjö&Hav),no_candidates,,,,
+1712,outfinder,no_candidates,,,,
+1716,Volontärbyrån,no_candidates,,,,
+1719,Tauffer Consulting,no_candidates,,,,
+1720,Basinghall Analytics,no_candidates,,,,
+1741,XRFTW,no_candidates,,,,
+1749,Project Management Institute,low_score,57,RCPI PROJECT AKTIEBOLAG,HELSINGBORG,Project AB
+1750,Gray Oncology Solutions,no_candidates,,,,
+1751,DiagnosticsXAI,no_candidates,,,,
+1760,Blackwell Medtech,low_score,63,Tintin Blackwell AB,MALMÖ,Blackwell
+1764,AI For HR,no_candidates,,,,
+1773,AI Coach Mikael Vilkas,no_candidates,,,,
+1777,W2X LABS,no_candidates,,,,
+1785,Derome AB,no_candidates,,,,
+1786,"Wallenberg AI, Autonomous Systems and Software Program - Humanity and Society",low_score,67,WALLENBERG DATA AKTIEBOLAG,STOCKHOLM,Wallenberg AB
+1787,Nytt-IQ,no_candidates,,,,
+1788,Archiblad's Adventures AB,no_candidates,,,,
+1792,Cambrex Karlskoga AB,no_candidates,,,,
+1802,AI-Coachen Mikael Vilkas,no_candidates,,,,
+1828,"Fritidsförvaltningen, Malmö stad",no_candidates,,,,
+1833,Eghed AB,no_candidates,,,,
+1835,The Swedish AI Association (AICenter),no_candidates,,,,
+1842,INVID AB,no_candidates,,,,
+1852,HC-Tec AB,no_candidates,,,,
+1853,Bäckström Stockholm AB,low_score,64,FRED BÄCKSTRÖM AKTIEBOLAG,FLEN,Bäckström
+1866,VerksamhetsVision i Stockholm,no_candidates,,,,
+1875,Jenny Sjölin AI Coach,low_score,41,Moments by Jenny Aktiebolag,NACKA,Jenny AB
+1882,Markbolagen,no_candidates,,,,
+1888,SeederDeBoer,no_candidates,,,,
+1900,Incoord - en teknikkonsult i samhällsbyggnadssektorn som förstår generativ AI,no_candidates,,,,
+1907,Triangulate,no_candidates,,,,
+1918,AI med Anton,no_candidates,,,,
+1959,FinetuneDB,no_candidates,,,,
+1971,Urban Vind B.V.,low_score,64,Mr Urban AB,SOLNA,Urban
+1974,Techlära,no_candidates,,,,
+1978,Gelectric,no_candidates,,,,
+2007,Qling.ai,no_candidates,,,,
+2015,AI Utbildningscentrum (AIUC),no_candidates,,,,
+2021,Studiefrämjandet Uppsala Västmanland,no_candidates,,,,
+2028,Nation.dev,low_score,65,Indian Nation Aktiebolag,STOCKHOLM,Nation
+2035,Mikrofonden Sverige / Sweden,no_candidates,,,,
+2052,Epachois Hospital Beds - Innovation,no_candidates,,,,
+2055,flux 1.1 Pro AI,low_score,82,FLUX AB,TÄBY,flux
+2056,AI for Social Progress,no_candidates,,,,
+2072,Chatpdffree.com,no_candidates,,,,
+2086,Aposmart,no_candidates,,,,
+2100,Soul Rehab,low_score,45,LYS - Lift Your Soul aktiebolag,ÖDESHÖG,Soul AB
+2101,Doings by House of Impact AB,no_candidates,,,,
+2102,And-U,low_score,81,Kandu AB,GÖTEBORG,AndU AB
+2105,Quantic Ceos New Media,low_score,84,QUANTIC AB,GÖTEBORG,Quantic
+2108,Unikum - Net AB,low_score,73,Unikum Trading AB,HÅLTA,Unikum AB
+2113,Avelon Consulting,low_score,56,Avelonium AB,STOCKHOLM,Avelon Aktiebolag
+2130,BUILD:ology,no_candidates,,,,
+2131,Kodehash Technologies,no_candidates,,,,
+2133,Teldrip,no_candidates,,,,
+2148,GF Piping System,no_candidates,,,,
+2152,heck.ai,no_candidates,,,,
+2154,CanaryBit,no_candidates,,,,
+2168,holminnovation,no_candidates,,,,
+2188,Registered Documents Europe,no_candidates,,,,
+2201,DecKid,no_candidates,,,,
+2202,Nimble & Co,no_candidates,,,,
+2209,Objectways Technologies,no_candidates,,,,
+2218,Mitigate AI Services,low_score,67,Mitigater AB,JÖNKÖPING,Mitigate Aktiebolag
+2261,SCD Information Technologies,no_candidates,,,,
+2268,Prosp3r,no_candidates,,,,
+2269,s-AI-les,no_candidates,,,,
+2270,AI&I,no_candidates,,,,
+2275,HumanTechConnect,no_candidates,,,,
+2285,ForHumanity,no_candidates,,,,
+2287,PepperCatch,no_candidates,,,,
+2290,Millainen Consulting Oy,no_candidates,,,,
+2302,Hälsokontroller och blodprover Stockholm | Nordic Wellth,no_candidates,,,,
+2304,Releev AI Labs,no_candidates,,,,
+2305,Seasia Infotech,no_candidates,,,,
+2306,Make AI Easy - C2M AB,low_score,82,Make AB,ÖSTERSKÄR,Make Aktiebolag
+2313,Fotanofe AB - For The Many Not The Few,low_score,81,Fotanofe AB,SOLLENTUNA,Fotanofe Aktiebolag
+2318,AIxDesign AB,no_candidates,,,,
+2320,Chatmoat,no_candidates,,,,
