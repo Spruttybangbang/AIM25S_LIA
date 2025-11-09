@@ -1,15 +1,7 @@
 #!/usr/bin/env python3
 """
-SCB-integration V2 för PRAKTIKJAKT
-Hämtar location_city för företag från SCB:s företagsregister
-
-Förbättringar från V1:
-- Robust API-hantering (session, retries, backoff)
-- Separat tabell scb_matches (påverkar inte original-data)
-- CSV-export av problemfall
-- Bättre namn-normalisering
-- Dynamisk fuzzy-threshold
-- Filtrering på type (startup/corporation/supplier/ngo)
+Retry SCB-sökning för företag utan kandidater
+Använder samma API-metod som scb_integration_v2.py
 """
 
 from __future__ import annotations
@@ -27,6 +19,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
+import pandas as pd
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
@@ -38,7 +31,7 @@ except ImportError as e:
 
 
 # ============================================================================
-# KONFIGURATION
+# KONFIGURATION (SAMMA SOM scb_integration_v2.py)
 # ============================================================================
 
 DEFAULT_DB = "ai_companies.db"
@@ -52,7 +45,7 @@ STATUS_FORCELIST = (429, 500, 502, 503, 504)
 BASE_FUZZY_THRESHOLD = 85
 
 # Logger setup
-logger = logging.getLogger("scb_integration")
+logger = logging.getLogger("retry_scb_search")
 handler = logging.StreamHandler(sys.stdout)
 handler.setFormatter(logging.Formatter("%(asctime)s | %(levelname)s | %(message)s"))
 logger.addHandler(handler)
@@ -60,7 +53,7 @@ logger.setLevel(logging.INFO)
 
 
 # ============================================================================
-# PATH VALIDATION
+# PATH VALIDATION (SAMMA SOM scb_integration_v2.py)
 # ============================================================================
 
 def validate_db_path(db_path: str) -> Path:
@@ -87,7 +80,7 @@ def validate_cert(cert: Optional[str | Tuple[str,str]]) -> Optional[str | Tuple[
 
 
 # ============================================================================
-# SESSION MED RETRY-LOGIK
+# SESSION MED RETRY-LOGIK (SAMMA SOM scb_integration_v2.py)
 # ============================================================================
 
 def make_session() -> requests.Session:
@@ -108,35 +101,35 @@ _query_cache: Dict[str, List[dict]] = {}
 
 
 # ============================================================================
-# NAMN-NORMALISERING & FUZZY MATCHING
+# NAMN-NORMALISERING & FUZZY MATCHING (SAMMA SOM scb_integration_v2.py)
 # ============================================================================
 
 def normalize_company_name(name: str) -> str:
     """Normalisera företagsnamn för bättre matchning"""
     if not name:
         return ""
-    
+
     n = name.lower()
     # Hantera svenska tecken
     n = n.translate(str.maketrans({"å": "a", "ä": "a", "ö": "o"}))
-    
+
     # Ta bort företagsformer och vanliga suffix
     kill_words = [
         r"\bab\b", r"\baktiebolag\b", r"\b(ltd|limited)\b", r"\b(inc|incorporated)\b",
         r"\bpubl\b", r"\bhb\b", r"\bkb\b", r"\bfilial\b",
-        r"\bsverige\b", r"\bsweden\b", 
+        r"\bsverige\b", r"\bsweden\b",
         r"\bi stockholm\b", r"\bi goteborg\b", r"\bi malmo\b",
         r"\bgroup\b", r"\bholding\b", r"\btech\b",
     ]
     n = re.sub("|".join(kill_words), " ", n)
-    
+
     # Ta bort domännamn
     n = re.sub(r"\b[a-z0-9-]+\.(com|se|io|ai|org|net)\b", " ", n)
-    
+
     # Behåll endast alfanumeriska tecken
     n = re.sub(r"[^a-z0-9]+", " ", n).strip()
     n = re.sub(r"\s+", " ", n)
-    
+
     return n
 
 def score_names(a: str, b: str) -> int:
@@ -144,14 +137,14 @@ def score_names(a: str, b: str) -> int:
     s1 = fuzz.ratio(a, b)
     s2 = fuzz.partial_ratio(a, b)
     s3 = fuzz.token_set_ratio(a, b)
-    
+
     # Viktad kombination
     score = int(0.5 * s3 + 0.3 * s1 + 0.2 * s2)
-    
+
     # Bonus för nästan perfekt match
     if s3 >= 95 and abs(len(a) - len(b)) <= 3:
         score = max(score, 97)
-    
+
     return score
 
 def dynamic_threshold(raw_name: str, base: int = BASE_FUZZY_THRESHOLD) -> int:
@@ -165,7 +158,7 @@ def dynamic_threshold(raw_name: str, base: int = BASE_FUZZY_THRESHOLD) -> int:
 
 
 # ============================================================================
-# API-KOMMUNIKATION
+# API-KOMMUNIKATION (SAMMA SOM scb_integration_v2.py)
 # ============================================================================
 
 @dataclass
@@ -177,13 +170,13 @@ class ApiResult:
 
 def scb_search_api(company_name: str, cert) -> ApiResult:
     """Sök företag i SCB API med robust error handling"""
-    
+
     # Cache-nyckel
     cache_key = normalize_company_name(company_name)
     if cache_key in _query_cache:
         logger.debug(f"Cache hit för '{company_name}'")
         return ApiResult(True, _query_cache[cache_key], 200)
-    
+
     # SCB:s faktiska payload-format
     payload = {
         "Företagsstatus": "1",  # Verksamma företag
@@ -197,13 +190,13 @@ def scb_search_api(company_name: str, cert) -> ApiResult:
             }
         ]
     }
-    
+
     logger.debug(f"API Request: {API_URL}")
     logger.debug(f"Payload: {payload}")
     logger.debug(f"Cert: {cert}")
-    
+
     delay = RATE_LIMIT_DELAY
-    
+
     for attempt in range(MAX_TOTAL_RETRIES):
         try:
             resp = SESSION.post(
@@ -221,7 +214,7 @@ def scb_search_api(company_name: str, cert) -> ApiResult:
             time.sleep(delay)
             delay *= (1.5 + BACKOFF_FACTOR)
             continue
-        
+
         # Hantera rate limiting
         if resp.status_code == 429:
             retry_after = float(resp.headers.get("Retry-After", "1.0"))
@@ -230,21 +223,21 @@ def scb_search_api(company_name: str, cert) -> ApiResult:
             time.sleep(wait)
             delay *= (1.5 + BACKOFF_FACTOR)
             continue
-        
+
         # Hantera server errors
         if resp.status_code >= 500:
             logger.warning(f"Serverfel {resp.status_code} (försök {attempt+1})")
             time.sleep(delay)
             delay *= (1.5 + BACKOFF_FACTOR)
             continue
-        
+
         # Parse response
         try:
             data = resp.json()
         except ValueError:
             logger.error("Icke-JSON svar från API")
             return ApiResult(False, [], resp.status_code, "Non-JSON response")
-        
+
         # SCB returnerar direkt en lista, inte {"value": [...]}
         result_data = []
         if isinstance(data, list):
@@ -252,33 +245,33 @@ def scb_search_api(company_name: str, cert) -> ApiResult:
         elif isinstance(data, dict):
             # Fallback om de ändrar format
             result_data = data.get('value', [])
-        
+
         _query_cache[cache_key] = result_data
         time.sleep(RATE_LIMIT_DELAY)
         return ApiResult(True, result_data, resp.status_code)
-    
+
     return ApiResult(False, [], 599, "Max retries exceeded")
 
 
 # ============================================================================
-# MATCHNING
+# MATCHNING (SAMMA SOM scb_integration_v2.py)
 # ============================================================================
 
 def find_best_match(our_name: str, scb_rows: List[dict]) -> Tuple[Optional[dict], int]:
     """Hitta bästa match från SCB-resultat"""
     our_norm = normalize_company_name(our_name)
-    
+
     best, best_score = None, 0
     for candidate in scb_rows:
         # SCB använder Företagsnamn (med å/ä/ö)
         scb_name = candidate.get("Företagsnamn", "").strip()
-        
+
         scb_norm = normalize_company_name(scb_name)
         score = score_names(our_norm, scb_norm)
-        
+
         if score > best_score:
             best, best_score = candidate, score
-    
+
     return best, best_score
 
 
@@ -286,46 +279,12 @@ def find_best_match(our_name: str, scb_rows: List[dict]) -> Tuple[Optional[dict]
 # DATABAS-HANTERING
 # ============================================================================
 
-def get_companies_without_location(
-    db_path: Path, 
-    limit: Optional[int] = None, 
-    only_types: Optional[List[str]] = None
-) -> List[Tuple[int, str]]:
-    """
-    Hämta företag utan location_city
-    Filtrerar på type om angivet
-    """
-    base = """
-        SELECT id, name
-        FROM companies
-        WHERE (location_city IS NULL OR TRIM(location_city) = '')
-    """
-    params = []
-    
-    if only_types:
-        norm = [t.strip().lower() for t in only_types if t.strip()]
-        placeholders = ",".join("?" for _ in norm)
-        base += f" AND LOWER(TRIM(type)) IN ({placeholders})"
-        params.extend(norm)
-    
-    if limit:
-        base += " LIMIT ?"
-        params.append(limit)
-    
-    conn = sqlite3.connect(str(db_path))
-    try:
-        cur = conn.cursor()
-        cur.execute(base, params)
-        return cur.fetchall()
-    finally:
-        conn.close()
-
 def save_scb_match(
-    db_path: Path, 
-    company_id: int, 
-    matched: bool, 
-    match_score: int, 
-    scb_data: dict, 
+    db_path: Path,
+    company_id: int,
+    matched: bool,
+    match_score: int,
+    scb_data: dict,
     dry_run: bool
 ) -> None:
     """
@@ -336,11 +295,11 @@ def save_scb_match(
         city = scb_data.get("PostOrt") or scb_data.get("Postort") or "N/A"
         logger.info(f"DRY RUN: company_id={company_id} matched={matched} score={match_score} city={city}")
         return
-    
+
     conn = sqlite3.connect(str(db_path))
     try:
         cur = conn.cursor()
-        
+
         # Skapa tabell om den inte finns
         cur.execute("""
             CREATE TABLE IF NOT EXISTS scb_matches (
@@ -353,18 +312,26 @@ def save_scb_match(
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
-        
+
+        # Kolla om matchning redan finns
+        cur.execute("SELECT id FROM scb_matches WHERE company_id = ?", (company_id,))
+        existing = cur.fetchone()
+
+        if existing:
+            logger.info(f"Matchning finns redan för company_id={company_id}, skippar")
+            return
+
         # Extrahera stad från SCB-data (PostOrt)
         city = scb_data.get("PostOrt") or None
-        
+
         # Spara match
         cur.execute(
-            """INSERT INTO scb_matches 
-               (company_id, matched, score, city, payload) 
+            """INSERT INTO scb_matches
+               (company_id, matched, score, city, payload)
                VALUES (?, ?, ?, ?, ?)""",
             (
-                company_id, 
-                1 if matched else 0, 
+                company_id,
+                1 if matched else 0,
                 int(match_score),
                 city,
                 json.dumps(scb_data, ensure_ascii=False)
@@ -389,33 +356,25 @@ def export_issues(rows: List[Dict[str, str]], path: Path) -> None:
 
 
 # ============================================================================
-# CLI
-# ============================================================================
-
-def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
-    p = argparse.ArgumentParser(description="SCB-integration V2 för PRAKTIKJAKT")
-    p.add_argument("--db", default=DEFAULT_DB, help="Sökväg till SQLite-databas")
-    p.add_argument("--cert", default=DEFAULT_CERT, help="Client cert path eller 'cert.pem,key.pem'")
-    p.add_argument("--limit", type=int, default=None, help="Max antal företag att köra")
-    p.add_argument("--min-score", type=int, default=BASE_FUZZY_THRESHOLD, help="Min fuzzy-score för match")
-    p.add_argument("--only-type", type=str, default="startup,corporation,supplier,ngo", 
-                   help="Kommaseparerad lista av type-värden")
-    p.add_argument("--dry-run", action="store_true", help="Skriv inte till DB")
-    p.add_argument("--issues-csv", type=str, default="scb_issues.csv", help="Exportera problemfall")
-    p.add_argument("--verbose", action="store_true", help="Mer loggning")
-    return p.parse_args(argv)
-
-
-# ============================================================================
 # MAIN
 # ============================================================================
 
 def main(argv: Optional[List[str]] = None) -> int:
-    args = parse_args(argv)
-    
+    parser = argparse.ArgumentParser(description="Retry SCB-sökning för företag utan kandidater")
+    parser.add_argument("--db", default=DEFAULT_DB, help="Sökväg till SQLite-databas")
+    parser.add_argument("--cert", default=DEFAULT_CERT, help="Client cert path eller 'cert.pem,key.pem'")
+    parser.add_argument("--input", default="no_candidates_need_review.csv", help="CSV med företag att söka")
+    parser.add_argument("--min-score", type=int, default=BASE_FUZZY_THRESHOLD, help="Min fuzzy-score för match")
+    parser.add_argument("--dry-run", action="store_true", help="Skriv inte till DB")
+    parser.add_argument("--issues-csv", type=str, default="retry_scb_issues.csv", help="Exportera problemfall")
+    parser.add_argument("--verbose", action="store_true", help="Mer loggning")
+    parser.add_argument("--limit", type=int, default=None, help="Max antal företag att köra")
+
+    args = parser.parse_args(argv)
+
     if args.verbose:
         logger.setLevel(logging.DEBUG)
-    
+
     # Validera cert
     cert = None
     if args.cert:
@@ -424,26 +383,31 @@ def main(argv: Optional[List[str]] = None) -> int:
         else:
             cert = args.cert
         cert = validate_cert(cert)
-    
+
     # Validera DB
     db_path = validate_db_path(args.db)
-    
-    # Hämta företag
-    only_types = [t.strip() for t in args.only_type.split(",")] if args.only_type else None
-    companies = get_companies_without_location(db_path, limit=args.limit, only_types=only_types)
-    
-    logger.info(f"Startar körning på {len(companies)} företag")
+
+    # Ladda företag från CSV
+    logger.info(f"Laddar företag från {args.input}")
+    df = pd.read_csv(args.input)
+
+    if args.limit:
+        df = df.head(args.limit)
+
+    logger.info(f"Startar körning på {len(df)} företag")
     logger.info(f"Dry-run: {args.dry_run}")
-    logger.info(f"Typer: {only_types or 'alla'}")
-    
+
     # Statistik
     issues: List[Dict[str, str]] = []
     updated, low_score, not_found, api_errors = 0, 0, 0, 0
-    
-    for company_id, name in companies:
+
+    for idx, row in df.iterrows():
+        company_id = int(row['id'])
+        name = row['name']
+
         # Sök i SCB
         api_result = scb_search_api(name, cert=cert)
-        
+
         if not api_result.ok:
             api_errors += 1
             logger.error(f"[API ERROR] id={company_id} name='{name}' status={api_result.status_code}")
@@ -456,7 +420,7 @@ def main(argv: Optional[List[str]] = None) -> int:
                 "PostOrt": "",
             })
             continue
-        
+
         if not api_result.data:
             not_found += 1
             logger.info(f"[NO DATA] id={company_id} name='{name}'")
@@ -469,11 +433,11 @@ def main(argv: Optional[List[str]] = None) -> int:
                 "PostOrt": "",
             })
             continue
-        
+
         # Hitta bästa match
         match, score = find_best_match(name, api_result.data)
         threshold = max(args.min_score, dynamic_threshold(name, base=args.min_score))
-        
+
         if match and score >= threshold:
             updated += 1
             matched_name = match.get("Företagsnamn", "")
@@ -493,21 +457,21 @@ def main(argv: Optional[List[str]] = None) -> int:
                 "best_candidate": cand_name,
                 "PostOrt": post_ort,
             })
-    
+
     # Exportera problemfall
     issues_path = Path(args.issues_csv).expanduser().resolve()
     if issues:
         export_issues(issues, issues_path)
         logger.info(f"Issues exporterade till: {issues_path}")
-    
+
     logger.info(f"")
     logger.info(f"=== SLUTSTATISTIK ===")
     logger.info(f"Uppdaterade: {updated}")
     logger.info(f"Låg score: {low_score}")
     logger.info(f"Inget resultat: {not_found}")
     logger.info(f"API-fel: {api_errors}")
-    logger.info(f"Total: {len(companies)}")
-    
+    logger.info(f"Total: {len(df)}")
+
     return 0
 
 
