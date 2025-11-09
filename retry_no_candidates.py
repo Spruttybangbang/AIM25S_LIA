@@ -98,6 +98,8 @@ def is_likely_non_company(company_name: str) -> Tuple[bool, str]:
 def generate_search_variants(company_name: str) -> List[str]:
     """
     Genererar alternativa söknamn för ett företag
+
+    Mer aggressiv variant-generering för att öka chansen att hitta företag i SCB.
     """
     variants = [company_name]
     name = company_name.strip()
@@ -113,12 +115,14 @@ def generate_search_variants(company_name: str) -> List[str]:
     # Lägg till AB om det inte finns
     if not name.endswith(' AB') and not 'AB' in name:
         variants.append(f"{name} AB")
+        variants.append(f"{name} Aktiebolag")
 
     # Ta bort domänändar (.ai, .se, etc.)
     if '.' in name:
         base_name = re.sub(r'\.[a-z]+$', '', name, flags=re.IGNORECASE)
         variants.append(base_name)
         variants.append(f"{base_name} AB")
+        variants.append(f"{base_name} Aktiebolag")
 
     # Ta bort specialtecken
     clean_name = re.sub(r'[^\w\s]', ' ', name)
@@ -131,11 +135,32 @@ def generate_search_variants(company_name: str) -> List[str]:
     if '(' in name and ')' in name:
         without_parens = re.sub(r'\([^)]*\)', '', name).strip()
         variants.append(without_parens)
+        variants.append(f"{without_parens} AB")
 
     # Konvertera akronymer
     if name.isupper() and len(name) <= 6:
         # T.ex. "CEVT" -> "CEVT AB"
         variants.append(f"{name} AB")
+        variants.append(f"{name} Aktiebolag")
+
+    # NYT: Sök på första ordet (för sammansatta namn)
+    words = name.split()
+    if len(words) >= 2:
+        first_word = words[0]
+        # Bara om första ordet är tillräckligt långt för att vara meningsfullt
+        if len(first_word) >= 4:
+            variants.append(first_word)
+            variants.append(f"{first_word} AB")
+            variants.append(f"{first_word} Aktiebolag")
+
+    # NYT: För namn med bindestreck, prova utan bindestreck
+    if '-' in name:
+        no_dash = name.replace('-', ' ')
+        variants.append(no_dash)
+        variants.append(f"{no_dash} AB")
+        no_dash_compact = name.replace('-', '')
+        variants.append(no_dash_compact)
+        variants.append(f"{no_dash_compact} AB")
 
     # Ta bort dubbletter och returnera
     return list(set([v for v in variants if v and len(v) > 1]))
