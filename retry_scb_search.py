@@ -454,8 +454,23 @@ def main(argv: Optional[List[str]] = None) -> int:
     updated, low_score, not_found, api_errors = 0, 0, 0, 0
 
     for idx, row in df.iterrows():
-        company_id = int(row['id'])
-        name = row['name']
+        # Hantera både 'id' och 'original_id' kolumn
+        if 'id' in row:
+            company_id = int(row['id'])
+        elif 'original_id' in row:
+            company_id = int(row['original_id'])
+        else:
+            logger.error(f"Row saknar både 'id' och 'original_id': {row}")
+            continue
+
+        # Hantera både 'name' och 'original_name' kolumn
+        if 'name' in row:
+            name = row['name']
+        elif 'original_name' in row:
+            name = row['original_name']
+        else:
+            logger.error(f"Row saknar både 'name' och 'original_name': {row}")
+            continue
 
         # Parsa search_variants från CSV (kan vara string eller redan lista)
         search_variants = []
@@ -469,6 +484,10 @@ def main(argv: Optional[List[str]] = None) -> int:
                     search_variants = []
             elif isinstance(variants_raw, list):
                 search_variants = variants_raw
+        elif 'correct_scb_name' in row and pd.notna(row['correct_scb_name']):
+            # Fallback: använd correct_scb_name om search_variants saknas
+            correct_name = row['correct_scb_name'].split('(')[0].strip()
+            search_variants = [correct_name]
 
         logger.info(f"\n[{idx+1}/{len(df)}] Söker: id={company_id} name='{name}'")
 
