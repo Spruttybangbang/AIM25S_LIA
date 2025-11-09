@@ -1,0 +1,169 @@
+(base) (.venv) linuslord@Mac AIM25S_LIA % python3 retry_scb_search.py --limit 10 --dry-run --verbose
+2025-11-09 20:52:09,960 | INFO | Laddar företag från no_candidates_need_review.csv
+2025-11-09 20:52:09,964 | INFO | Startar körning på 10 företag
+2025-11-09 20:52:09,964 | INFO | Dry-run: True
+2025-11-09 20:52:09,965 | INFO | 
+[1/10] Söker: id=1137 name='Layke Analytics'
+2025-11-09 20:52:09,965 | INFO |   Söker med 2 varianter för 'Layke Analytics'
+2025-11-09 20:52:09,965 | DEBUG | API Request: https://privateapi.scb.se/nv0101/v1/sokpavar/api/je/HamtaForetag
+2025-11-09 20:52:09,965 | DEBUG | Payload: {'Företagsstatus': '1', 'Registreringsstatus': '1', 'variabler': [{'Varde1': 'Layke Analytics', 'Varde2': '', 'Operator': 'Innehaller', 'Variabel': 'Namn'}]}
+2025-11-09 20:52:09,965 | DEBUG | Cert: ../SCB/certifikat/Certifikat_SokPaVar_A00592_2025-10-29_09-27-36Z.pem
+2025-11-09 20:52:13,634 | DEBUG | Response status: 200
+2025-11-09 20:52:14,140 | DEBUG |     'Layke Analytics' gav inga resultat
+2025-11-09 20:52:14,140 | DEBUG | Cache hit för 'Layke Analytics AB'
+2025-11-09 20:52:14,140 | DEBUG |     'Layke Analytics AB' gav inga resultat
+2025-11-09 20:52:14,140 | INFO |   Inga kandidater hittades med någon variant
+2025-11-09 20:52:14,140 | INFO | ✗ [NO CANDIDATES] id=1137 name='Layke Analytics'
+2025-11-09 20:52:14,142 | INFO | 
+[2/10] Söker: id=1152 name='Rek.ai'
+2025-11-09 20:52:14,142 | INFO |   Söker med 6 varianter för 'Rek.ai'
+2025-11-09 20:52:14,142 | DEBUG | API Request: https://privateapi.scb.se/nv0101/v1/sokpavar/api/je/HamtaForetag
+2025-11-09 20:52:14,142 | DEBUG | Payload: {'Företagsstatus': '1', 'Registreringsstatus': '1', 'variabler': [{'Varde1': 'Rek.ai', 'Varde2': '', 'Operator': 'Innehaller', 'Variabel': 'Namn'}]}
+2025-11-09 20:52:14,142 | DEBUG | Cert: ../SCB/certifikat/Certifikat_SokPaVar_A00592_2025-10-29_09-27-36Z.pem
+2025-11-09 20:52:14,193 | DEBUG | Response status: 200
+2025-11-09 20:52:14,696 | DEBUG |     'Rek.ai' gav inga resultat
+2025-11-09 20:52:14,696 | DEBUG | API Request: https://privateapi.scb.se/nv0101/v1/sokpavar/api/je/HamtaForetag
+2025-11-09 20:52:14,697 | DEBUG | Payload: {'Företagsstatus': '1', 'Registreringsstatus': '1', 'variabler': [{'Varde1': 'Rek AB', 'Varde2': '', 'Operator': 'Innehaller', 'Variabel': 'Namn'}]}
+2025-11-09 20:52:14,697 | DEBUG | Cert: ../SCB/certifikat/Certifikat_SokPaVar_A00592_2025-10-29_09-27-36Z.pem
+2025-11-09 20:52:18,283 | DEBUG | Response status: 200
+2025-11-09 20:52:18,791 | DEBUG |     'Rek AB' gav 42 kandidater
+2025-11-09 20:52:18,792 | DEBUG | API Request: https://privateapi.scb.se/nv0101/v1/sokpavar/api/je/HamtaForetag
+2025-11-09 20:52:18,792 | DEBUG | Payload: {'Företagsstatus': '1', 'Registreringsstatus': '1', 'variabler': [{'Varde1': 'Rek ai', 'Varde2': '', 'Operator': 'Innehaller', 'Variabel': 'Namn'}]}
+2025-11-09 20:52:18,792 | DEBUG | Cert: ../SCB/certifikat/Certifikat_SokPaVar_A00592_2025-10-29_09-27-36Z.pem
+2025-11-09 20:52:22,234 | DEBUG | Response status: 200
+2025-11-09 20:52:22,738 | DEBUG |     'Rek ai' gav inga resultat
+2025-11-09 20:52:22,738 | DEBUG | Cache hit för 'Rek'
+2025-11-09 20:52:22,738 | DEBUG |     'Rek' gav 42 kandidater
+2025-11-09 20:52:22,738 | DEBUG | Cache hit för 'Rek ai AB'
+2025-11-09 20:52:22,738 | DEBUG |     'Rek ai AB' gav inga resultat
+2025-11-09 20:52:22,739 | DEBUG | Cache hit för 'Rek.ai AB'
+2025-11-09 20:52:22,739 | DEBUG |     'Rek.ai AB' gav inga resultat
+2025-11-09 20:52:22,741 | INFO | ✗ [NO CANDIDATES] id=1152 name='Rek.ai'
+2025-11-09 20:52:22,742 | INFO | 
+[3/10] Söker: id=1157 name='Skyqraft'
+2025-11-09 20:52:22,742 | INFO |   Söker med 2 varianter för 'Skyqraft'
+2025-11-09 20:52:22,742 | DEBUG | API Request: https://privateapi.scb.se/nv0101/v1/sokpavar/api/je/HamtaForetag
+2025-11-09 20:52:22,742 | DEBUG | Payload: {'Företagsstatus': '1', 'Registreringsstatus': '1', 'variabler': [{'Varde1': 'Skyqraft', 'Varde2': '', 'Operator': 'Innehaller', 'Variabel': 'Namn'}]}
+2025-11-09 20:52:22,742 | DEBUG | Cert: ../SCB/certifikat/Certifikat_SokPaVar_A00592_2025-10-29_09-27-36Z.pem
+2025-11-09 20:52:26,229 | DEBUG | Response status: 200
+2025-11-09 20:52:26,735 | DEBUG |     'Skyqraft' gav inga resultat
+2025-11-09 20:52:26,735 | DEBUG | Cache hit för 'Skyqraft AB'
+2025-11-09 20:52:26,735 | DEBUG |     'Skyqraft AB' gav inga resultat
+2025-11-09 20:52:26,735 | INFO |   Inga kandidater hittades med någon variant
+2025-11-09 20:52:26,736 | INFO | ✗ [NO CANDIDATES] id=1157 name='Skyqraft'
+2025-11-09 20:52:26,737 | INFO | 
+[4/10] Söker: id=1166 name='TecPoint'
+2025-11-09 20:52:26,737 | INFO |   Söker med 2 varianter för 'TecPoint'
+2025-11-09 20:52:26,737 | DEBUG | API Request: https://privateapi.scb.se/nv0101/v1/sokpavar/api/je/HamtaForetag
+2025-11-09 20:52:26,737 | DEBUG | Payload: {'Företagsstatus': '1', 'Registreringsstatus': '1', 'variabler': [{'Varde1': 'TecPoint', 'Varde2': '', 'Operator': 'Innehaller', 'Variabel': 'Namn'}]}
+2025-11-09 20:52:26,737 | DEBUG | Cert: ../SCB/certifikat/Certifikat_SokPaVar_A00592_2025-10-29_09-27-36Z.pem
+2025-11-09 20:52:30,017 | DEBUG | Response status: 200
+2025-11-09 20:52:30,522 | DEBUG |     'TecPoint' gav inga resultat
+2025-11-09 20:52:30,523 | DEBUG | Cache hit för 'TecPoint AB'
+2025-11-09 20:52:30,523 | DEBUG |     'TecPoint AB' gav inga resultat
+2025-11-09 20:52:30,523 | INFO |   Inga kandidater hittades med någon variant
+2025-11-09 20:52:30,523 | INFO | ✗ [NO CANDIDATES] id=1166 name='TecPoint'
+2025-11-09 20:52:30,524 | INFO | 
+[5/10] Söker: id=1190 name='Happy42'
+2025-11-09 20:52:30,524 | INFO |   Söker med 2 varianter för 'Happy42'
+2025-11-09 20:52:30,524 | DEBUG | API Request: https://privateapi.scb.se/nv0101/v1/sokpavar/api/je/HamtaForetag
+2025-11-09 20:52:30,524 | DEBUG | Payload: {'Företagsstatus': '1', 'Registreringsstatus': '1', 'variabler': [{'Varde1': 'Happy42', 'Varde2': '', 'Operator': 'Innehaller', 'Variabel': 'Namn'}]}
+2025-11-09 20:52:30,524 | DEBUG | Cert: ../SCB/certifikat/Certifikat_SokPaVar_A00592_2025-10-29_09-27-36Z.pem
+2025-11-09 20:52:33,745 | DEBUG | Response status: 200
+2025-11-09 20:52:34,251 | DEBUG |     'Happy42' gav inga resultat
+2025-11-09 20:52:34,251 | DEBUG | Cache hit för 'Happy42 AB'
+2025-11-09 20:52:34,251 | DEBUG |     'Happy42 AB' gav inga resultat
+2025-11-09 20:52:34,251 | INFO |   Inga kandidater hittades med någon variant
+2025-11-09 20:52:34,251 | INFO | ✗ [NO CANDIDATES] id=1190 name='Happy42'
+2025-11-09 20:52:34,252 | INFO | 
+[6/10] Söker: id=1202 name='Sentian.ai'
+2025-11-09 20:52:34,252 | INFO |   Söker med 6 varianter för 'Sentian.ai'
+2025-11-09 20:52:34,252 | DEBUG | Cache hit för 'Sentian.ai'
+2025-11-09 20:52:34,253 | DEBUG |     'Sentian.ai' gav inga resultat
+2025-11-09 20:52:34,253 | DEBUG | API Request: https://privateapi.scb.se/nv0101/v1/sokpavar/api/je/HamtaForetag
+2025-11-09 20:52:34,253 | DEBUG | Payload: {'Företagsstatus': '1', 'Registreringsstatus': '1', 'variabler': [{'Varde1': 'Sentian AB', 'Varde2': '', 'Operator': 'Innehaller', 'Variabel': 'Namn'}]}
+2025-11-09 20:52:34,253 | DEBUG | Cert: ../SCB/certifikat/Certifikat_SokPaVar_A00592_2025-10-29_09-27-36Z.pem
+2025-11-09 20:52:37,492 | DEBUG | Response status: 200
+2025-11-09 20:52:37,996 | DEBUG |     'Sentian AB' gav inga resultat
+2025-11-09 20:52:37,996 | DEBUG | Cache hit för 'Sentian.ai AB'
+2025-11-09 20:52:37,996 | DEBUG |     'Sentian.ai AB' gav inga resultat
+2025-11-09 20:52:37,997 | DEBUG | Cache hit för 'Sentian'
+2025-11-09 20:52:37,997 | DEBUG |     'Sentian' gav inga resultat
+2025-11-09 20:52:37,997 | DEBUG | API Request: https://privateapi.scb.se/nv0101/v1/sokpavar/api/je/HamtaForetag
+2025-11-09 20:52:37,997 | DEBUG | Payload: {'Företagsstatus': '1', 'Registreringsstatus': '1', 'variabler': [{'Varde1': 'Sentian ai AB', 'Varde2': '', 'Operator': 'Innehaller', 'Variabel': 'Namn'}]}
+2025-11-09 20:52:37,997 | DEBUG | Cert: ../SCB/certifikat/Certifikat_SokPaVar_A00592_2025-10-29_09-27-36Z.pem
+2025-11-09 20:52:41,350 | DEBUG | Response status: 200
+2025-11-09 20:52:41,854 | DEBUG |     'Sentian ai AB' gav inga resultat
+2025-11-09 20:52:41,855 | DEBUG | Cache hit för 'Sentian ai'
+2025-11-09 20:52:41,855 | DEBUG |     'Sentian ai' gav inga resultat
+2025-11-09 20:52:41,855 | INFO |   Inga kandidater hittades med någon variant
+2025-11-09 20:52:41,855 | INFO | ✗ [NO CANDIDATES] id=1202 name='Sentian.ai'
+2025-11-09 20:52:41,856 | INFO | 
+[7/10] Söker: id=1211 name='rebase.energy'
+2025-11-09 20:52:41,856 | INFO |   Söker med 6 varianter för 'rebase.energy'
+2025-11-09 20:52:41,856 | DEBUG | API Request: https://privateapi.scb.se/nv0101/v1/sokpavar/api/je/HamtaForetag
+2025-11-09 20:52:41,856 | DEBUG | Payload: {'Företagsstatus': '1', 'Registreringsstatus': '1', 'variabler': [{'Varde1': 'rebase.energy', 'Varde2': '', 'Operator': 'Innehaller', 'Variabel': 'Namn'}]}
+2025-11-09 20:52:41,856 | DEBUG | Cert: ../SCB/certifikat/Certifikat_SokPaVar_A00592_2025-10-29_09-27-36Z.pem
+2025-11-09 20:52:41,903 | DEBUG | Response status: 200
+2025-11-09 20:52:42,408 | DEBUG |     'rebase.energy' gav inga resultat
+2025-11-09 20:52:42,408 | DEBUG | API Request: https://privateapi.scb.se/nv0101/v1/sokpavar/api/je/HamtaForetag
+2025-11-09 20:52:42,408 | DEBUG | Payload: {'Företagsstatus': '1', 'Registreringsstatus': '1', 'variabler': [{'Varde1': 'rebase', 'Varde2': '', 'Operator': 'Innehaller', 'Variabel': 'Namn'}]}
+2025-11-09 20:52:42,408 | DEBUG | Cert: ../SCB/certifikat/Certifikat_SokPaVar_A00592_2025-10-29_09-27-36Z.pem
+2025-11-09 20:52:45,891 | DEBUG | Response status: 200
+2025-11-09 20:52:46,394 | DEBUG |     'rebase' gav 3 kandidater
+2025-11-09 20:52:46,394 | DEBUG | Cache hit för 'rebase AB'
+2025-11-09 20:52:46,394 | DEBUG |     'rebase AB' gav 3 kandidater
+2025-11-09 20:52:46,395 | DEBUG | Cache hit för 'rebase energy AB'
+2025-11-09 20:52:46,395 | DEBUG |     'rebase energy AB' gav inga resultat
+2025-11-09 20:52:46,395 | DEBUG | Cache hit för 'rebase energy'
+2025-11-09 20:52:46,395 | DEBUG |     'rebase energy' gav inga resultat
+2025-11-09 20:52:46,395 | DEBUG | Cache hit för 'rebase.energy AB'
+2025-11-09 20:52:46,395 | DEBUG |     'rebase.energy AB' gav inga resultat
+2025-11-09 20:52:46,399 | INFO |   Bästa match: score=88, variant='rebase AB', företag='REBASE AKTIEBOLAG'
+2025-11-09 20:52:46,399 | INFO | ✓ [MATCH] id=1211 score=88 variant='rebase AB' -> 'REBASE AKTIEBOLAG' (KUNGÄLV)
+2025-11-09 20:52:46,399 | INFO | DRY RUN: company_id=1211 matched=True score=88 city=KUNGÄLV
+2025-11-09 20:52:46,400 | INFO | 
+[8/10] Söker: id=1212 name='Weather Labs'
+2025-11-09 20:52:46,400 | INFO |   Söker med 2 varianter för 'Weather Labs'
+2025-11-09 20:52:46,400 | DEBUG | API Request: https://privateapi.scb.se/nv0101/v1/sokpavar/api/je/HamtaForetag
+2025-11-09 20:52:46,400 | DEBUG | Payload: {'Företagsstatus': '1', 'Registreringsstatus': '1', 'variabler': [{'Varde1': 'Weather Labs', 'Varde2': '', 'Operator': 'Innehaller', 'Variabel': 'Namn'}]}
+2025-11-09 20:52:46,400 | DEBUG | Cert: ../SCB/certifikat/Certifikat_SokPaVar_A00592_2025-10-29_09-27-36Z.pem
+2025-11-09 20:52:49,783 | DEBUG | Response status: 200
+2025-11-09 20:52:50,289 | DEBUG |     'Weather Labs' gav inga resultat
+2025-11-09 20:52:50,289 | DEBUG | Cache hit för 'Weather Labs AB'
+2025-11-09 20:52:50,289 | DEBUG |     'Weather Labs AB' gav inga resultat
+2025-11-09 20:52:50,289 | INFO |   Inga kandidater hittades med någon variant
+2025-11-09 20:52:50,289 | INFO | ✗ [NO CANDIDATES] id=1212 name='Weather Labs'
+2025-11-09 20:52:50,289 | INFO | 
+[9/10] Söker: id=1222 name='Videquus AB'
+2025-11-09 20:52:50,290 | INFO |   Söker med 2 varianter för 'Videquus AB'
+2025-11-09 20:52:50,290 | DEBUG | API Request: https://privateapi.scb.se/nv0101/v1/sokpavar/api/je/HamtaForetag
+2025-11-09 20:52:50,290 | DEBUG | Payload: {'Företagsstatus': '1', 'Registreringsstatus': '1', 'variabler': [{'Varde1': 'Videquus AB', 'Varde2': '', 'Operator': 'Innehaller', 'Variabel': 'Namn'}]}
+2025-11-09 20:52:50,290 | DEBUG | Cert: ../SCB/certifikat/Certifikat_SokPaVar_A00592_2025-10-29_09-27-36Z.pem
+2025-11-09 20:52:53,673 | DEBUG | Response status: 200
+2025-11-09 20:52:54,176 | DEBUG |     'Videquus AB' gav inga resultat
+2025-11-09 20:52:54,177 | DEBUG | Cache hit för 'Videquus'
+2025-11-09 20:52:54,177 | DEBUG |     'Videquus' gav inga resultat
+2025-11-09 20:52:54,177 | INFO |   Inga kandidater hittades med någon variant
+2025-11-09 20:52:54,177 | INFO | ✗ [NO CANDIDATES] id=1222 name='Videquus AB'
+2025-11-09 20:52:54,178 | INFO | 
+[10/10] Söker: id=1227 name='Oterlu'
+2025-11-09 20:52:54,178 | INFO |   Söker med 2 varianter för 'Oterlu'
+2025-11-09 20:52:54,178 | DEBUG | API Request: https://privateapi.scb.se/nv0101/v1/sokpavar/api/je/HamtaForetag
+2025-11-09 20:52:54,178 | DEBUG | Payload: {'Företagsstatus': '1', 'Registreringsstatus': '1', 'variabler': [{'Varde1': 'Oterlu', 'Varde2': '', 'Operator': 'Innehaller', 'Variabel': 'Namn'}]}
+2025-11-09 20:52:54,178 | DEBUG | Cert: ../SCB/certifikat/Certifikat_SokPaVar_A00592_2025-10-29_09-27-36Z.pem
+2025-11-09 20:52:57,664 | DEBUG | Response status: 200
+2025-11-09 20:52:58,169 | DEBUG |     'Oterlu' gav inga resultat
+2025-11-09 20:52:58,170 | DEBUG | Cache hit för 'Oterlu AB'
+2025-11-09 20:52:58,170 | DEBUG |     'Oterlu AB' gav inga resultat
+2025-11-09 20:52:58,170 | INFO |   Inga kandidater hittades med någon variant
+2025-11-09 20:52:58,170 | INFO | ✗ [NO CANDIDATES] id=1227 name='Oterlu'
+2025-11-09 20:52:58,173 | INFO | Issues exporterade till: /Users/linuslord/python/AIM25S/Discord/AIM25S_LIA/retry_scb_issues.csv
+2025-11-09 20:52:58,173 | INFO | 
+2025-11-09 20:52:58,174 | INFO | === SLUTSTATISTIK ===
+2025-11-09 20:52:58,174 | INFO | Uppdaterade: 1
+2025-11-09 20:52:58,174 | INFO | Låg score: 0
+2025-11-09 20:52:58,174 | INFO | Inget resultat: 9
+2025-11-09 20:52:58,174 | INFO | API-fel: 0
+2025-11-09 20:52:58,174 | INFO | Total: 10
+(base) (.venv) linuslord@Mac AIM25S_LIA % 
