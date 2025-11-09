@@ -29,6 +29,11 @@ try:
 except ImportError as e:
     raise SystemExit("Saknar 'fuzzywuzzy'. Installera: pip install fuzzywuzzy python-Levenshtein --break-system-packages") from e
 
+try:
+    import ast
+except ImportError:
+    pass  # ast is in stdlib
+
 
 # ============================================================================
 # KONFIGURATION (SAMMA SOM scb_integration_v2.py)
@@ -275,6 +280,53 @@ def find_best_match(our_name: str, scb_rows: List[dict]) -> Tuple[Optional[dict]
     return best, best_score
 
 
+def search_with_variants(
+    company_id: int,
+    name: str,
+    search_variants: List[str],
+    cert,
+    min_score: int
+) -> Tuple[Optional[dict], int, str]:
+    """
+    Sök med originalnamn först, sedan prova alla search_variants
+    Returnerar (best_match, score, variant_used)
+    """
+    all_candidates = []
+    variants_to_try = [name] + [v for v in search_variants if v != name]
+
+    logger.info(f"  Söker med {len(variants_to_try)} varianter för '{name}'")
+
+    for variant in variants_to_try:
+        api_result = scb_search_api(variant, cert=cert)
+
+        if not api_result.ok:
+            logger.debug(f"    API-fel för variant '{variant}'")
+            continue
+
+        if api_result.data:
+            logger.debug(f"    '{variant}' gav {len(api_result.data)} kandidater")
+            # Tagga varje kandidat med vilken variant som hittade den
+            for candidate in api_result.data:
+                candidate['_search_variant'] = variant
+            all_candidates.extend(api_result.data)
+        else:
+            logger.debug(f"    '{variant}' gav inga resultat")
+
+    if not all_candidates:
+        logger.info(f"  Inga kandidater hittades med någon variant")
+        return None, 0, ""
+
+    # Hitta bästa match över alla kandidater från alla varianter
+    best_match, best_score = find_best_match(name, all_candidates)
+
+    if best_match:
+        variant_used = best_match.get('_search_variant', name)
+        logger.info(f"  Bästa match: score={best_score}, variant='{variant_used}', företag='{best_match.get('Företagsnamn', '')}'")
+        return best_match, best_score, variant_used
+
+    return None, 0, ""
+
+
 # ============================================================================
 # DATABAS-HANTERING
 # ============================================================================
@@ -348,9 +400,9 @@ def save_scb_match(
 
 def export_issues(rows: List[Dict[str, str]], path: Path) -> None:
     """Exportera problemfall till CSV"""
-    fieldnames = ["id", "name", "reason", "score", "best_candidate", "PostOrt"]
+    fieldnames = ["id", "name", "reason", "score", "best_candidate", "PostOrt", "variant_used"]
     with path.open("w", newline="", encoding="utf-8") as f:
-        w = csv.DictWriter(f, fieldnames=fieldnames)
+        w = csv.DictWriter(f, fieldnames=fieldnames, extrasaction='ignore')
         w.writeheader()
         w.writerows(rows)
 
@@ -405,50 +457,39 @@ def main(argv: Optional[List[str]] = None) -> int:
         company_id = int(row['id'])
         name = row['name']
 
-        # Sök i SCB
-        api_result = scb_search_api(name, cert=cert)
+        # Parsa search_variants från CSV (kan vara string eller redan lista)
+        search_variants = []
+        if 'search_variants' in row and pd.notna(row['search_variants']):
+            variants_raw = row['search_variants']
+            if isinstance(variants_raw, str):
+                try:
+                    search_variants = ast.literal_eval(variants_raw)
+                except (ValueError, SyntaxError):
+                    logger.warning(f"Kunde inte parsa search_variants för id={company_id}")
+                    search_variants = []
+            elif isinstance(variants_raw, list):
+                search_variants = variants_raw
 
-        if not api_result.ok:
-            api_errors += 1
-            logger.error(f"[API ERROR] id={company_id} name='{name}' status={api_result.status_code}")
-            issues.append({
-                "id": str(company_id),
-                "name": name,
-                "reason": f"api_error_{api_result.status_code}",
-                "score": "",
-                "best_candidate": "",
-                "PostOrt": "",
-            })
-            continue
+        logger.info(f"\n[{idx+1}/{len(df)}] Söker: id={company_id} name='{name}'")
 
-        if not api_result.data:
-            not_found += 1
-            logger.info(f"[NO DATA] id={company_id} name='{name}'")
-            issues.append({
-                "id": str(company_id),
-                "name": name,
-                "reason": "no_candidates",
-                "score": "",
-                "best_candidate": "",
-                "PostOrt": "",
-            })
-            continue
+        # Sök med alla varianter
+        match, score, variant_used = search_with_variants(
+            company_id, name, search_variants, cert, args.min_score
+        )
 
-        # Hitta bästa match
-        match, score = find_best_match(name, api_result.data)
         threshold = max(args.min_score, dynamic_threshold(name, base=args.min_score))
 
         if match and score >= threshold:
             updated += 1
             matched_name = match.get("Företagsnamn", "")
             city = match.get("PostOrt", "")
-            logger.info(f"[MATCH] id={company_id} score={score} '{name}' -> '{matched_name}' ({city})")
+            logger.info(f"✓ [MATCH] id={company_id} score={score} variant='{variant_used}' -> '{matched_name}' ({city})")
             save_scb_match(db_path, company_id, True, score, match, dry_run=args.dry_run)
-        else:
+        elif match:
             low_score += 1
-            cand_name = (match or {}).get("Företagsnamn", "")
-            post_ort = (match or {}).get("PostOrt", "")
-            logger.info(f"[LOW SCORE] id={company_id} score={score} thresh={threshold} '{name}' best='{cand_name}'")
+            cand_name = match.get("Företagsnamn", "")
+            post_ort = match.get("PostOrt", "")
+            logger.info(f"⚠ [LOW SCORE] id={company_id} score={score} thresh={threshold} '{name}' best='{cand_name}'")
             issues.append({
                 "id": str(company_id),
                 "name": name,
@@ -456,6 +497,19 @@ def main(argv: Optional[List[str]] = None) -> int:
                 "score": str(score),
                 "best_candidate": cand_name,
                 "PostOrt": post_ort,
+                "variant_used": variant_used,
+            })
+        else:
+            not_found += 1
+            logger.info(f"✗ [NO CANDIDATES] id={company_id} name='{name}'")
+            issues.append({
+                "id": str(company_id),
+                "name": name,
+                "reason": "no_candidates",
+                "score": "",
+                "best_candidate": "",
+                "PostOrt": "",
+                "variant_used": "",
             })
 
     # Exportera problemfall
