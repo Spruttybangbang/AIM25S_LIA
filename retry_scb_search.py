@@ -35,7 +35,7 @@ except ImportError as e:
 # ============================================================================
 
 DEFAULT_DB = "ai_companies.db"
-DEFAULT_CERT = "certifikat/Certifikat_SokPaVar_A00592_2025-10-29_09-27-36Z.pem"
+DEFAULT_CERT = "../SCB/certifikat/Certifikat_SokPaVar_A00592_2025-10-29_09-27-36Z.pem"
 API_URL = "https://privateapi.scb.se/nv0101/v1/sokpavar/api/je/HamtaForetag"
 TIMEOUT_SEC = 30
 RATE_LIMIT_DELAY = 0.5
