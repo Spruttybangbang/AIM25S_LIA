@@ -67,10 +67,24 @@ python3 approve_good_matches.py
 ```
 
 Detta script hjälper dig att:
+- Välja vilka matchningar att granska (alla 31, bara score ≥85, eller ≥80)
 - Auto-godkänna matchningar med mycket hög poäng (≥89)
 - Manuellt granska matchningar med bra poäng (85-88)
+- **NYT!** Lägga till manuella matchningar när du hittar rätt företag själv
 - Lägga till godkända matchningar i databasen
 - Uppdatera location_city för företagen
+
+#### Alternativ vid granskning:
+- **y** = Godkänn matchningen (läggs till i databasen)
+- **n** = Neka matchningen
+- **m** = Manuell matchning (du hittat rätt företag själv)
+  - Ange rätt SCB-företagsnamn
+  - Lägg till hemsida, org.nr, ort
+  - Skriv kommentar/anteckningar
+  - Sparas i `manual_matches_[timestamp].csv`
+- **s** = Skippa för tillfället
+- **i** = Visa mer info från databasen
+- **q** = Avsluta granskning
 
 ## Analysresultat
 

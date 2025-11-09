@@ -40,12 +40,13 @@ def review_matches(matches_df, conn):
     approved = []
     rejected = []
     skipped = []
+    manual_matches = []
 
     for idx, row in matches_df.iterrows():
         show_match_details(row)
 
         while True:
-            choice = input("\nGodkänn? (y=ja, n=nej, s=skippa, i=info, q=avsluta): ").lower().strip()
+            choice = input("\nGodkänn? (y=ja, n=nej, m=manuell matchning, s=skippa, i=info, q=avsluta): ").lower().strip()
 
             if choice == 'y':
                 approved.append(row)
@@ -54,6 +55,46 @@ def review_matches(matches_df, conn):
             elif choice == 'n':
                 rejected.append(row)
                 print("❌ Nekad")
+                break
+            elif choice == 'm':
+                # Manuell matchning - användaren har hittat rätt företag själv
+                print("\n📝 MANUELL MATCHNING")
+                print("Ange information om det rätta företaget:")
+                print("-" * 80)
+
+                manual_info = {
+                    'original_id': row['id'],
+                    'original_name': row['name'],
+                    'suggested_candidate': row['best_candidate'],
+                    'suggested_score': row['score'],
+                    'suggested_ort': row['PostOrt']
+                }
+
+                # Samla in information
+                correct_name = input("Rätt företagsnamn (SCB): ").strip()
+                if correct_name:
+                    manual_info['correct_scb_name'] = correct_name
+
+                website = input("Hemsida (valfritt): ").strip()
+                if website:
+                    manual_info['website'] = website
+
+                org_nr = input("Organisationsnummer (valfritt): ").strip()
+                if org_nr:
+                    manual_info['org_nummer'] = org_nr
+
+                city = input("Ort (valfritt): ").strip()
+                if city:
+                    manual_info['city'] = city
+
+                comment = input("Kommentar/anteckningar (valfritt): ").strip()
+                if comment:
+                    manual_info['comment'] = comment
+
+                manual_info['added_at'] = datetime.now().isoformat()
+
+                manual_matches.append(manual_info)
+                print("✍️  Manuell matchning sparad!")
                 break
             elif choice == 's':
                 skipped.append(row)
@@ -72,11 +113,11 @@ def review_matches(matches_df, conn):
                             print(f"  {col}: {val}")
             elif choice == 'q':
                 print("\n🛑 Avbryter granskning...")
-                return approved, rejected, skipped
+                return approved, rejected, skipped, manual_matches
             else:
                 print("Ogiltigt val, försök igen")
 
-    return approved, rejected, skipped
+    return approved, rejected, skipped, manual_matches
 
 def auto_approve_high_confidence(matches_df, threshold=89):
     """Automatiskt godkänn matchningar över en viss tröskel"""
@@ -172,7 +213,7 @@ def add_matches_to_database(approved_matches, conn, dry_run=True):
 
     return added_count, error_count
 
-def save_review_results(approved, rejected, skipped):
+def save_review_results(approved, rejected, skipped, manual_matches):
     """Sparar granskningsresultat till filer"""
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
 
@@ -188,6 +229,11 @@ def save_review_results(approved, rejected, skipped):
         pd.DataFrame(skipped).to_csv(f'skipped_matches_{timestamp}.csv', index=False)
         print(f"💾 Skippade matchningar sparade till: skipped_matches_{timestamp}.csv")
 
+    if manual_matches:
+        pd.DataFrame(manual_matches).to_csv(f'manual_matches_{timestamp}.csv', index=False)
+        print(f"💾 Manuella matchningar sparade till: manual_matches_{timestamp}.csv")
+        print(f"    → Dessa kan användas för manuell uppföljning och sökning i SCB")
+
 def main():
     """Huvudfunktion"""
     print("\n" + "="*80)
@@ -197,11 +243,33 @@ def main():
     # Ladda data
     low_score_df, conn = load_data()
 
-    # Filtrera på hög poäng
-    min_score = 85
-    high_confidence_df = get_high_confidence_matches(low_score_df, min_score)
+    # Välj vilka matchningar att granska
+    print("\n📊 Tillgängliga matchningar:")
+    print(f"  • Totalt: {len(low_score_df)} st")
+    print(f"  • Score ≥ 85: {len(low_score_df[low_score_df['score'] >= 85])} st")
+    print(f"  • Score 80-84: {len(low_score_df[(low_score_df['score'] >= 80) & (low_score_df['score'] < 85)])} st")
+    print(f"  • Score < 80: {len(low_score_df[low_score_df['score'] < 80])} st")
 
-    print(f"\n📊 Hittade {len(high_confidence_df)} matchningar med score ≥ {min_score}")
+    print("\nVilka matchningar vill du granska?")
+    print("  1. Endast score ≥ 85 (15 st - rekommenderat)")
+    print("  2. Alla 31 matchningar")
+    print("  3. Score ≥ 80 (23 st)")
+
+    filter_choice = input("\nVal (1-3): ").strip()
+
+    if filter_choice == '1':
+        min_score = 85
+        high_confidence_df = get_high_confidence_matches(low_score_df, min_score)
+    elif filter_choice == '2':
+        high_confidence_df = low_score_df.copy()
+    elif filter_choice == '3':
+        high_confidence_df = low_score_df[low_score_df['score'] >= 80].copy()
+    else:
+        print("❌ Ogiltigt val")
+        conn.close()
+        return
+
+    print(f"\n📊 Granskar {len(high_confidence_df)} matchningar")
 
     # Välj metod
     print("\nVälj granskningsmetod:")
@@ -215,6 +283,7 @@ def main():
     approved = []
     rejected = []
     skipped = []
+    manual_matches = []
 
     if choice == '1':
         auto_approved, manual_review = auto_approve_high_confidence(high_confidence_df, threshold=89)
@@ -222,16 +291,18 @@ def main():
 
         if len(manual_review) > 0:
             print(f"\n📋 Granska {len(manual_review)} matchningar manuellt:")
-            manual_approved, manual_rejected, manual_skipped = review_matches(manual_review, conn)
+            manual_approved, manual_rejected, manual_skipped, manual_manual = review_matches(manual_review, conn)
             approved.extend([m.to_dict() for m in manual_approved])
             rejected.extend([m.to_dict() for m in manual_rejected])
             skipped.extend([m.to_dict() for m in manual_skipped])
+            manual_matches.extend(manual_manual)
 
     elif choice == '2':
-        manual_approved, manual_rejected, manual_skipped = review_matches(high_confidence_df, conn)
+        manual_approved, manual_rejected, manual_skipped, manual_manual = review_matches(high_confidence_df, conn)
         approved.extend([m.to_dict() for m in manual_approved])
         rejected.extend([m.to_dict() for m in manual_rejected])
         skipped.extend([m.to_dict() for m in manual_skipped])
+        manual_matches.extend(manual_manual)
 
     elif choice == '3':
         approved = high_confidence_df.to_dict('records')
@@ -255,11 +326,14 @@ def main():
     print("="*80)
     print(f"✅ Godkända: {len(approved)}")
     print(f"❌ Nekade: {len(rejected)}")
+    print(f"✍️  Manuella matchningar: {len(manual_matches)}")
     print(f"⏭️  Skippade: {len(skipped)}")
 
+    # Spara granskningsresultat om det finns något att spara
+    if len(approved) > 0 or len(rejected) > 0 or len(skipped) > 0 or len(manual_matches) > 0:
+        save_review_results(approved, rejected, skipped, manual_matches)
+
     if len(approved) > 0:
-        # Spara granskningsresultat
-        save_review_results(approved, rejected, skipped)
 
         # Fråga om databas-uppdatering
         print("\n" + "="*80)
