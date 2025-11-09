@@ -22,7 +22,7 @@ def load_companies_to_search():
 
 def get_company_details(company_id):
     """Hämtar detaljer om företag från databasen"""
-    conn = sqlite3.connect('ai_companies.db')
+    conn = sqlite3.connect('../ai_companies.db')
     query = f"""
     SELECT id, name, website, description, location_city, type, maturity
     FROM companies

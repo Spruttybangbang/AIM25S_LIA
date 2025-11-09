@@ -14,7 +14,7 @@ low_score_df = pd.read_csv('analysis_low_scores.csv')
 no_candidates_df = pd.read_csv('analysis_no_candidates.csv')
 
 # Anslut till databasen
-conn = sqlite3.connect('ai_companies.db')
+conn = sqlite3.connect('../ai_companies.db')
 
 print(f"""
 ✅ Data inladdad!
@@ -94,7 +94,7 @@ def show_stats_by_score_range():
 def find_swedish_companies_in_no_candidates():
     """Hitta svenska företag bland no_candidates som kanske borde matchas"""
     # Merge med företagsinformation
-    conn_temp = sqlite3.connect('ai_companies.db')
+    conn_temp = sqlite3.connect('../ai_companies.db')
     companies = pd.read_sql_query("SELECT id, name, website FROM companies", conn_temp)
     conn_temp.close()
 

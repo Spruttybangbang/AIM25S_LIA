@@ -20,7 +20,7 @@ def load_data():
     matches_df = pd.read_csv('scb_matches.csv', nrows=100)  # Bara för att se strukturen
 
     # Ladda företagsinformation från databasen
-    conn = sqlite3.connect('ai_companies.db')
+    conn = sqlite3.connect('../ai_companies.db')
     companies_df = pd.read_sql_query("""
         SELECT id, name, website, location_city, location_country
         FROM companies
@@ -217,10 +217,10 @@ def export_dataframes(low_score_df, no_candidates_df):
 
     # Exportera till CSV
     low_score_sorted.to_csv('analysis_low_scores.csv', index=False)
-    print(f"\n✅ Exporterade low_score matchningar till: analysis_low_scores.csv")
+    print(f"\n✅ Exporterade low_score matchningar till: analysis_low_scores../results/.csv")
 
     no_candidates_df.to_csv('analysis_no_candidates.csv', index=False)
-    print(f"✅ Exporterade no_candidates till: analysis_no_candidates.csv")
+    print(f"✅ Exporterade no_candidates till: analysis_no_candidates../results/.csv")
 
     # Skapa en sammanfattning
     summary = {
@@ -236,7 +236,7 @@ def export_dataframes(low_score_df, no_candidates_df):
     }
     summary_df = pd.DataFrame(summary)
     summary_df.to_csv('analysis_summary.csv', index=False)
-    print(f"✅ Exporterade sammanfattning till: analysis_summary.csv")
+    print(f"✅ Exporterade sammanfattning till: analysis_summary../results/.csv")
 
     return low_score_sorted, no_candidates_df
 
@@ -273,9 +273,9 @@ def main():
     print("  • low_score_df - Matchningar med låg poäng")
     print("  • no_candidates_df - Företag utan kandidater")
     print("\nExporterade filer:")
-    print("  • analysis_low_scores.csv")
-    print("  • analysis_no_candidates.csv")
-    print("  • analysis_summary.csv")
+    print("  • analysis_low_scores../results/.csv")
+    print("  • analysis_no_candidates../results/.csv")
+    print("  • analysis_summary../results/.csv")
 
     return issues_df, low_score_sorted, no_candidates_with_info
 

@@ -16,7 +16,7 @@ from datetime import datetime
 def load_data():
     """Laddar data och ansluter till databasen"""
     low_score_df = pd.read_csv('analysis_low_scores.csv')
-    conn = sqlite3.connect('ai_companies.db')
+    conn = sqlite3.connect('../ai_companies.db')
     return low_score_df, conn
 
 def get_high_confidence_matches(df, min_score=85):
@@ -219,19 +219,19 @@ def save_review_results(approved, rejected, skipped, manual_matches):
 
     if approved:
         pd.DataFrame(approved).to_csv(f'approved_matches_{timestamp}.csv', index=False)
-        print(f"💾 Godkända matchningar sparade till: approved_matches_{timestamp}.csv")
+        print(f"💾 Godkända matchningar sparade till: approved_matches_{timestamp}../results/.csv")
 
     if rejected:
         pd.DataFrame(rejected).to_csv(f'rejected_matches_{timestamp}.csv', index=False)
-        print(f"💾 Nekade matchningar sparade till: rejected_matches_{timestamp}.csv")
+        print(f"💾 Nekade matchningar sparade till: rejected_matches_{timestamp}../results/.csv")
 
     if skipped:
         pd.DataFrame(skipped).to_csv(f'skipped_matches_{timestamp}.csv', index=False)
-        print(f"💾 Skippade matchningar sparade till: skipped_matches_{timestamp}.csv")
+        print(f"💾 Skippade matchningar sparade till: skipped_matches_{timestamp}../results/.csv")
 
     if manual_matches:
         pd.DataFrame(manual_matches).to_csv(f'manual_matches_{timestamp}.csv', index=False)
-        print(f"💾 Manuella matchningar sparade till: manual_matches_{timestamp}.csv")
+        print(f"💾 Manuella matchningar sparade till: manual_matches_{timestamp}../results/.csv")
         print(f"    → Dessa kan användas för manuell uppföljning och sökning i SCB")
 
 def main():
