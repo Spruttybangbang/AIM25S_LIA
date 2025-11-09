@@ -49,6 +49,24 @@ AIM25S_LIA/
     └── SCB_ANALYS_README.md
 ```
 
+## ⚙️ Konfiguration
+
+**Första gången:** Kopiera exempel-konfigurationen och uppdatera med dina sökvägar:
+
+```bash
+cp config.example.ini config.ini
+# Redigera config.ini med din faktiska certifikatsökväg
+```
+
+**config.ini** (gitignored - innehåller känsliga sökvägar):
+```ini
+[SCB]
+cert_path = /path/to/your/scb_certificate.pem
+database_path = ai_companies.db
+```
+
+**Säkerhet:** `config.ini` är redan tillagd i `.gitignore` och kommer aldrig att commitas. Certifikatsökvägen delas inte publikt.
+
 ## 🚀 Snabbstart
 
 ### 1. Grundläggande SCB-integration
@@ -112,12 +130,14 @@ pip install pandas fuzzywuzzy python-Levenshtein requests --break-system-package
 
 ## 📝 Certifikat
 
-SCB API kräver klientcertifikat. Standard path:
-```
-../../SCB/certifikat/Certifikat_SokPaVar_A00592_2025-10-29_09-27-36Z.pem
+SCB API kräver klientcertifikat från SCB. Konfigurera sökvägen i `config.ini`:
+
+```ini
+[SCB]
+cert_path = /your/path/to/scb_certificate.pem
 ```
 
-Ändra med `--cert` flaggan om nödvändigt.
+Alternativt, ändra med `--cert` flaggan vid körning.
 
 ## 🗄 Databas
 
