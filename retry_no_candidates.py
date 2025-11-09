@@ -80,24 +80,18 @@ def is_likely_foreign(company_name: str, website: str = None) -> Tuple[bool, str
 def is_likely_non_company(company_name: str) -> Tuple[bool, str]:
     """
     Identifierar om namnet troligen inte är ett företag
+
+    OBS: Vi filtrerar INTE bort organisationer/föreningar längre
+    eftersom de kan ha kontor och vara intressanta praktikplatser!
     """
     name_lower = company_name.lower()
 
-    # Organisationer, stiftelser, föreningar
-    non_company_keywords = [
-        'foundation', 'stiftelse', 'förening', 'förbund',
-        'alliance', 'forum', 'institute', 'institut',
-        'center', 'centre', 'network', 'community',
-        'group', 'association', 'society'
-    ]
-
-    for keyword in non_company_keywords:
-        if keyword in name_lower:
-            return True, f"Troligen organisation/förening: {keyword}"
-
-    # Personer (förnamn + efternamn pattern)
-    if len(company_name.split()) == 2 and not any(char in company_name for char in ['.', 'AB', 'AB']):
-        return True, "Troligen privatperson"
+    # Endast filtrera bort personer (förnamn + efternamn utan AB eller andra markörer)
+    if len(company_name.split()) == 2 and not any(char in company_name for char in ['.', 'AB', 'ab']):
+        # Dubbelkolla att det inte innehåller organisation-ord
+        org_keywords = ['consulting', 'group', 'tech', 'analytics', 'labs']
+        if not any(keyword in name_lower for keyword in org_keywords):
+            return True, "Troligen privatperson"
 
     return False, ""
 
