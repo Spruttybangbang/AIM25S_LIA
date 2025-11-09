@@ -2,30 +2,30 @@ id,name,reason,score,best_candidate,PostOrt
 1447,Saco,low_score,91.0,SACON AKTIEBOLAG,SALTSJÖ-BOO
 1555,Alstom,low_score,91.0,ALSTOM Rail Sweden AB,STOCKHOLM
 1965,NATO,low_score,91.0,Naton AB,NACKA
+1722,Esatto AB,low_score,88.0,Dizparc Esatto AB,STOCKHOLM
+1134,Smartr,low_score,88.0,Smartrun AB,VÄRSÅS
 1564,IBM,low_score,88.0,IBM USA,STOCKHOLM
 1545,SVT,low_score,88.0,SVTB Holding Aktiebolag,STOCKHOLM
-1346,IDC,low_score,88.0,IDCL INC AB,VINTRIE
-1134,Smartr,low_score,88.0,Smartrun AB,VÄRSÅS
-1722,Esatto AB,low_score,88.0,Dizparc Esatto AB,STOCKHOLM
 2194,EdMon,low_score,88.0,"Gorie, Edmon",SÖDERTÄLJE
 1726,PWC,low_score,88.0,PWCO AB,FRILLESÅS
-1322,Volvo Group,low_score,87.0,VOLVO GROUP MEXICO,UTLANDET
+1346,IDC,low_score,88.0,IDCL INC AB,VINTRIE
 1389,Zooma,low_score,87.0,Zooma Agency AB,GÖTEBORG
+1322,Volvo Group,low_score,87.0,VOLVO GROUP MEXICO,UTLANDET
 1321,Svea AI,low_score,86.0,Svea AI Technology AB,STOCKHOLM
 2263,Vlink,low_score,86.0,devLink AB,FALKENBERG
 2272,Tally,low_score,86.0,"Tally, Michael",TJOCKÖ
 2043,Saab AB,low_score,84.0,Insaab AB,BALLINGSLÖV
 1138,Codon,low_score,84.0,Codon Consulting AB,STOCKHOLM
 1120,NVIDIA,low_score,83.0,NVIDIA SINGAPORE PTE LTD,UTLANDET
-1208,Unibap,low_score,82.0,Unibap Space Solutions AB (publ),UPPSALA
-2048,Preem AB,low_score,82.0,Bensinstation Preem AB,STOCKHOLM
 1804,Läkarmissionen,low_score,82.0,LÄKARMISSIONEN - STIFTELSE FÖR FILANTROPISK VERKSAMHET,VÄLLINGBY
+2048,Preem AB,low_score,82.0,Bensinstation Preem AB,STOCKHOLM
+1208,Unibap,low_score,82.0,Unibap Space Solutions AB (publ),UPPSALA
 1494,Noodl,low_score,81.0,Bitnoodl AB,LOMMA
 1902,Navati,low_score,80.0,Lunavation AB,UMEÅ
 1508,Unesco,low_score,77.0,UNESCO LUCS - LOKALT UNESCOCENTER FÖR SAMVERKAN,TUMBA
+1617,Riksidrottsförbundet,low_score,76.0,RIKSIDROTTSFÖRBUNDETS IDROTTSINSTITUT,LIDINGÖ
 1876,Slack,low_score,76.0,Kungslack AB,HUDDINGE
 1614,Stena AB,low_score,76.0,Investena AB,NACKA
-1617,Riksidrottsförbundet,low_score,76.0,RIKSIDROTTSFÖRBUNDETS IDROTTSINSTITUT,LIDINGÖ
 1830,Maria Strand,low_score,73.0,Maria Strandlund Tomsvik AB,STOCKSUND
 1701,Nordic Intel,low_score,71.0,Nordic Intelligence Services AB,TÄBY
 1541,Toloka,low_score,70.0,BRUTTOLOKALEN,JÄRFÄLLA
