@@ -28,8 +28,26 @@ def import_bulk_fuzzy_matches(
     """
     Läser granskade fuzzy matches från CSV och importerar till databasen
     """
-    # Läs CSV
-    df = pd.read_csv(csv_path)
+    # Läs CSV med bättre felhantering
+    try:
+        # Försök först med standard inställningar
+        df = pd.read_csv(csv_path)
+    except pd.errors.ParserError as e:
+        print(f"⚠️  CSV-parsningsfel: {e}")
+        print("   Försöker med alternativ metod...")
+        try:
+            # Försök med quoting och escape-tecken
+            df = pd.read_csv(
+                csv_path,
+                quotechar='"',
+                escapechar='\\',
+                on_bad_lines='warn'  # Varna men fortsätt
+            )
+        except Exception as e2:
+            print(f"❌ Kunde inte läsa CSV: {e2}")
+            print("\nTips: Öppna CSV:n i Excel och spara om den.")
+            return
+
     print(f"✓ Läste {len(df)} fuzzy matches från {csv_path.name}")
 
     # Filtrera på min_score om specificerat

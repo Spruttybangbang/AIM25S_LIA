@@ -311,7 +311,8 @@ class BulkSCBMatcher:
             os.makedirs('results', exist_ok=True)
 
             df = pd.DataFrame(fuzzy_matches)
-            df.to_csv(csv_path, index=False, encoding='utf-8')
+            # Använd quoting för att hantera kommatecken och citattecken i data
+            df.to_csv(csv_path, index=False, encoding='utf-8', quoting=1)  # QUOTE_ALL
 
             print(f"\n📋 Exporterade {len(fuzzy_matches)} fuzzy matches till:")
             print(f"   {csv_path}")
