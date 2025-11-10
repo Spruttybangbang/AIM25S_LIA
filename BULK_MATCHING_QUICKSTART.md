@@ -50,9 +50,22 @@ python3 /path/to/AIM25S_LIA/tools/bulk_scb_matcher.py \
 
 ## ✅ Förväntat resultat
 
-- **~200-400 nya matchningar** av 753 företag
-- Myndigheter/universitet hittas inte (finns ej i företagsregistret)
-- Svenska AB/HB/KB hittas oftast
+Scriptet delar upp matchningar i två kategorier:
+
+### 🟢 Perfekta matchningar (100% score)
+- Läggs **automatiskt** i databasen
+- Org.nr-matchning eller exakt namnmatchning
+- Förväntad mängd: ~100-200 företag
+
+### 🟡 Fuzzy matchningar (85-99% score)
+- Exporteras till **CSV för manuell granskning**
+- Förväntad mängd: ~100-200 företag
+- **VIKTIGT:** Granska dessa innan import!
+
+### ❌ Ingen matchning
+- Myndigheter/universitet (finns ej i företagsregistret)
+- Utländska företag
+- Förväntad mängd: ~400-500 företag
 
 ## 🔧 Alternativ: Kopiera databas först
 
@@ -91,10 +104,36 @@ pip install fuzzywuzzy python-Levenshtein
 
 ## 📝 Efter matchningen
 
-När scriptet är klart:
-1. Kontrollera resultaten (se antal matchningar)
-2. Databasen är redan uppdaterad (om inte --dry-run)
-3. Fortsätt till nästa steg i projektet!
+### Steg 1: Granska fuzzy matches
+
+Om scriptet exporterade fuzzy matches:
+
+```bash
+# Öppna CSV:n i Excel/Numbers
+open results/bulk_fuzzy_matches_YYYYMMDD_HHMMSS.csv
+```
+
+Granska varje rad:
+- **Korrekt matchning?** Behåll raden
+- **Felaktig matchning?** Radera raden
+
+### Steg 2: Importera godkända matchningar
+
+```bash
+python3 /path/to/AIM25S_LIA/tools/import_bulk_fuzzy_matches.py \
+    --csv results/bulk_fuzzy_matches_YYYYMMDD_HHMMSS.csv \
+    --db /path/to/AIM25S_LIA/ai_companies.db
+```
+
+**Flaggor:**
+- `--dry-run` - Test utan att spara
+- `--min-score 90` - Importera endast matches med score >= 90
+
+### Steg 3: Klart!
+
+1. Perfekta matchningar är redan i databasen
+2. Granskade fuzzy matches är importerade
+3. Databasen är berikad med SCB-data! 🎉
 
 ---
 

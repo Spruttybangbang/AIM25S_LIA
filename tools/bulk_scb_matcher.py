@@ -188,6 +188,9 @@ class BulkSCBMatcher:
 
     def process_companies(self, dry_run=False, limit=None):
         """Bearbeta alla företag utan SCB-matchning."""
+        import pandas as pd
+        import os
+
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
 
@@ -210,7 +213,8 @@ class BulkSCBMatcher:
         print(f"\n🔍 Bearbetar {len(companies)} företag...")
         print("=" * 70)
 
-        matches_to_insert = []
+        perfect_matches = []  # 100% score - läggs direkt i DB
+        fuzzy_matches = []    # 85-99% score - exporteras till CSV
 
         for i, (company_id, name, website, is_swedish) in enumerate(companies, 1):
             # Skip icke-svenska företag
@@ -224,29 +228,53 @@ class BulkSCBMatcher:
             if match_data and score >= 85:
                 # Vi har en matchning!
                 if score == 100:
+                    # PERFEKT matchning - lägg direkt i databasen
                     self.stats['perfect_matches'] += 1
                     emoji = '✅'
+
+                    print(f"{emoji} [{i}/{len(companies)}] {name}")
+                    print(f"   Matchad med: {match_data['Foretagsnamn'] or match_data['Namn']}")
+                    print(f"   Score: {score} | Type: {match_type}")
+                    print(f"   Org.nr: {match_data['PeOrgNr']} | Status: {match_data['FtgStat']}")
+                    print(f"   → AUTO-GODKÄND (perfekt match)")
+                    print()
+
+                    # Förbered för insättning i databas
+                    payload = json.dumps(match_data, ensure_ascii=False)
+                    perfect_matches.append((
+                        company_id,
+                        1,  # matched
+                        score,
+                        match_data['PostOrt'],
+                        payload,
+                        datetime.now().isoformat()
+                    ))
                 else:
+                    # FUZZY matchning - exportera till CSV för granskning
                     self.stats['fuzzy_matches'] += 1
                     emoji = '🔶'
 
-                print(f"{emoji} [{i}/{len(companies)}] {name}")
-                print(f"   Matchad med: {match_data['Foretagsnamn'] or match_data['Namn']}")
-                print(f"   Score: {score} | Type: {match_type}")
-                print(f"   Org.nr: {match_data['PeOrgNr']} | Status: {match_data['FtgStat']}")
-                print(f"   Juridisk form: {match_data['JurForm']} | SNI: {match_data['Ng1']}")
-                print()
+                    print(f"{emoji} [{i}/{len(companies)}] {name}")
+                    print(f"   Matchad med: {match_data['Foretagsnamn'] or match_data['Namn']}")
+                    print(f"   Score: {score} | Type: {match_type}")
+                    print(f"   Org.nr: {match_data['PeOrgNr']} | Status: {match_data['FtgStat']}")
+                    print(f"   → Behöver granskas (fuzzy match)")
+                    print()
 
-                # Förbered för insättning
-                payload = json.dumps(match_data, ensure_ascii=False)
-                matches_to_insert.append((
-                    company_id,
-                    1,  # matched
-                    score,
-                    match_data['PostOrt'],
-                    payload,
-                    datetime.now().isoformat()
-                ))
+                    # Lägg till i CSV-export
+                    fuzzy_matches.append({
+                        'company_id': company_id,
+                        'company_name': name,
+                        'matched_name': match_data['Foretagsnamn'] or match_data['Namn'],
+                        'score': score,
+                        'match_type': match_type,
+                        'orgnr': match_data['PeOrgNr'],
+                        'status': match_data['FtgStat'],
+                        'city': match_data['PostOrt'],
+                        'jurform': match_data['JurForm'],
+                        'sni': match_data['Ng1'],
+                        'payload': json.dumps(match_data, ensure_ascii=False)
+                    })
             else:
                 self.stats['no_match'] += 1
                 if i % 50 == 0:  # Visa bara var 50:e no-match
@@ -256,25 +284,44 @@ class BulkSCBMatcher:
         print("📊 MATCHNINGSRESULTAT")
         print("=" * 70)
         print(f"Totalt företag:      {self.stats['total_companies']}")
-        print(f"Perfect matches:     {self.stats['perfect_matches']} (100% score)")
-        print(f"Fuzzy matches:       {self.stats['fuzzy_matches']} (85-99% score)")
+        print(f"Perfect matches:     {self.stats['perfect_matches']} (100% score) → AUTO-GODKÄNDA")
+        print(f"Fuzzy matches:       {self.stats['fuzzy_matches']} (85-99% score) → KRÄVER GRANSKNING")
         print(f"Ingen matchning:     {self.stats['no_match']}")
         print(f"Skippade:            {self.stats['skipped']}")
-        print(f"\nTotalt matchade:     {self.stats['perfect_matches'] + self.stats['fuzzy_matches']}")
         print("=" * 70)
 
-        if not dry_run and matches_to_insert:
-            print(f"\n💾 Sparar {len(matches_to_insert)} matchningar till databasen...")
+        # Spara perfekta matchningar till databasen
+        if not dry_run and perfect_matches:
+            print(f"\n💾 Sparar {len(perfect_matches)} perfekta matchningar till databasen...")
 
             cursor.executemany('''
                 INSERT INTO scb_matches (company_id, matched, score, city, payload, created_at)
                 VALUES (?, ?, ?, ?, ?, ?)
-            ''', matches_to_insert)
+            ''', perfect_matches)
 
             conn.commit()
             print("✅ Sparat!")
-        elif dry_run:
-            print("\n🔍 DRY RUN - Ingen data sparad")
+
+        # Exportera fuzzy matches till CSV
+        if fuzzy_matches:
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            csv_path = f'results/bulk_fuzzy_matches_{timestamp}.csv'
+
+            # Skapa results-mappen om den inte finns
+            os.makedirs('results', exist_ok=True)
+
+            df = pd.DataFrame(fuzzy_matches)
+            df.to_csv(csv_path, index=False, encoding='utf-8')
+
+            print(f"\n📋 Exporterade {len(fuzzy_matches)} fuzzy matches till:")
+            print(f"   {csv_path}")
+            print(f"\n⚠️  VIKTIGT: Granska dessa manuellt innan import!")
+            print(f"   Använd sedan: tools/import_manual_matches_direct.py")
+
+        if dry_run:
+            print("\n🔍 DRY RUN - Ingen data sparad till databasen")
+            if fuzzy_matches:
+                print("   (CSV hade exporterats i en riktig körning)")
 
         conn.close()
 

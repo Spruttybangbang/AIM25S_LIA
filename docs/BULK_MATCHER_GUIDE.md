@@ -68,17 +68,21 @@ Scriptet filtrerar automatiskt på `is_swedish = 1` eftersom utländska företag
 
 ### Matchningsstrategier
 
-1. **Org.nr-matchning (100% score)**
+1. **Org.nr-matchning (100% score)** → Auto-godkänd
    - Försöker extrahera org.nr från website/metadata
    - Matchar direkt mot PeOrgNr i bulk-filen
+   - Läggs direkt i databasen
 
-2. **Exakt namnmatchning (100% score)**
+2. **Exakt namnmatchning (100% score)** → Auto-godkänd
    - Normaliserar namn (tar bort "AB", "Aktiebolag", etc.)
    - Matchar exakt mot företagsnamn
+   - Läggs direkt i databasen
 
-3. **Fuzzy namnmatchning (85-99% score)**
+3. **Fuzzy namnmatchning (85-99% score)** → Kräver granskning
    - Använder Levenshtein-distans
    - Tröskelvärde: 85
+   - Exporteras till CSV för manuell granskning
+   - **VIKTIGT:** Kan innehålla felaktiga matchningar!
 
 ### Data som läggs till
 
@@ -106,10 +110,14 @@ För varje matchning läggs följande information till i `scb_matches`:
 
 Baserat på tidigare körningar:
 
-- **Myndigheter/Universitet**: Ingen matchning (finns ej i företagsregistret)
-- **Utländska företag**: Ingen matchning (finns ej i svenska registret)
-- **Svenska företag**: 30-50% matchningsrate
-- **Estimat**: ~200-300 nya matchningar av 753
+- **Perfekta matchningar (100%)**: ~100-200 företag → Auto-godkända
+- **Fuzzy matchningar (85-99%)**: ~100-200 företag → CSV för granskning
+- **Ingen matchning**: ~400-500 företag
+  - Myndigheter/Universitet (finns ej i företagsregistret)
+  - Utländska företag (finns ej i svenska registret)
+  - Företag utan orgnr eller extremt annorlunda namn
+
+**Total förväntat berikande**: ~200-400 företag efter granskning
 
 ## ⚠️ Viktigt
 
@@ -121,8 +129,40 @@ Baserat på tidigare körningar:
 
 ### Efter körning
 
+#### Steg 1: Perfekta matchningar
+Dessa är redan i databasen - ingen åtgärd krävs!
+
+#### Steg 2: Granska fuzzy matches
+
 ```bash
-# Kopiera tillbaka den uppdaterade databasen
+# Öppna CSV:n för granskning
+open results/bulk_fuzzy_matches_YYYYMMDD_HHMMSS.csv
+```
+
+**Granskningsprocess:**
+1. Öppna CSV:n i Excel/Numbers/Google Sheets
+2. Granska varje rad:
+   - Jämför `company_name` med `matched_name`
+   - Kolla `score` (högre = säkrare)
+   - Verifiera `city` och `orgnr` om möjligt
+3. **Radera felaktiga matchningar** från CSV:n
+4. Spara den granskade filen
+
+#### Steg 3: Importera godkända fuzzy matches
+
+```bash
+python3 tools/import_bulk_fuzzy_matches.py \
+    --csv results/bulk_fuzzy_matches_YYYYMMDD_HHMMSS.csv \
+    --db ai_companies.db
+```
+
+**Flaggor:**
+- `--dry-run` - Test utan att spara till databasen
+- `--min-score 90` - Importera endast matches med score >= 90
+
+#### Steg 4: Kopiera tillbaka databasen (om du jobbar med kopia)
+
+```bash
 cp ai_companies.db /path/to/AIM25S_LIA/
 ```
 
@@ -134,7 +174,8 @@ cp ai_companies.db /path/to/AIM25S_LIA/
    Läst 200,000 rader...
    ...
 ✅ Läst 1,802,936 rader
-   Index-storlek: 1,234,567 nycklar
+   Org.nr index: 1,654,321 företag
+   Namn prefix index: 8,432 prefix
 
 🔍 Bearbetar 753 företag...
 ======================================================================
@@ -142,31 +183,35 @@ cp ai_companies.db /path/to/AIM25S_LIA/
    Matchad med: LAYKE ANALYTICS AB
    Score: 100 | Type: exact_name
    Org.nr: 165591234567 | Status: 1
-   Juridisk form: 49 | SNI: 62010
+   → AUTO-GODKÄND (perfekt match)
 
 🔶 [2/753] Knowing Company
    Matchad med: KNOWING COMPANY AB
    Score: 95 | Type: fuzzy
    Org.nr: 165598765432 | Status: 1
-   Juridisk form: 49 | SNI: 62020
+   → Behöver granskas (fuzzy match)
 
-❌ [3/753] NVIDIA - Ingen matchning
+❌ [50/753] NVIDIA - Ingen matchning
 ...
 
 ======================================================================
 📊 MATCHNINGSRESULTAT
 ======================================================================
 Totalt företag:      753
-Perfect matches:     187 (100% score)
-Fuzzy matches:       124 (85-99% score)
+Perfect matches:     187 (100% score) → AUTO-GODKÄNDA
+Fuzzy matches:       124 (85-99% score) → KRÄVER GRANSKNING
 Ingen matchning:     442
 Skippade:            0
-
-Totalt matchade:     311
 ======================================================================
 
-💾 Sparar 311 matchningar till databasen...
+💾 Sparar 187 perfekta matchningar till databasen...
 ✅ Sparat!
+
+📋 Exporterade 124 fuzzy matches till:
+   results/bulk_fuzzy_matches_20251110_143022.csv
+
+⚠️  VIKTIGT: Granska dessa manuellt innan import!
+   Använd sedan: tools/import_bulk_fuzzy_matches.py
 ```
 
 ## 🐛 Troubleshooting
