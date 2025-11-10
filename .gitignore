@@ -43,3 +43,6 @@ data/
 *bulk*.txt
 *bulk*.zip
 scb_bulk*
+
+# Database backups
+*_backup_*.db
