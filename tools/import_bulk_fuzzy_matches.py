@@ -29,23 +29,35 @@ def import_bulk_fuzzy_matches(
     Läser granskade fuzzy matches från CSV och importerar till databasen
     """
     # Läs CSV med bättre felhantering
-    try:
-        # Försök först med standard inställningar
-        df = pd.read_csv(csv_path)
-    except pd.errors.ParserError as e:
-        print(f"⚠️  CSV-parsningsfel: {e}")
-        print("   Försöker med alternativ metod...")
+    # Apple Numbers och skandinaviska Excel använder ofta semikolon
+    df = None
+
+    # Försök olika separatorer
+    for separator, sep_name in [(',', 'komma'), (';', 'semikolon'), ('\t', 'tab')]:
         try:
-            # Försök med quoting och escape-tecken
+            df_test = pd.read_csv(csv_path, sep=separator, nrows=5)
+            # Kontrollera att vi har rätt kolumner
+            if 'company_id' in df_test.columns and 'company_name' in df_test.columns:
+                print(f"✓ Detekterade separator: {sep_name}")
+                df = pd.read_csv(csv_path, sep=separator)
+                break
+        except Exception:
+            continue
+
+    if df is None:
+        # Försök med Python-parser som är mer flexibel
+        try:
+            print("⚠️  Försöker med flexibel parser...")
             df = pd.read_csv(
                 csv_path,
-                quotechar='"',
-                escapechar='\\',
-                on_bad_lines='warn'  # Varna men fortsätt
+                sep=None,  # Auto-detect separator
+                engine='python',
+                on_bad_lines='warn'
             )
-        except Exception as e2:
-            print(f"❌ Kunde inte läsa CSV: {e2}")
-            print("\nTips: Öppna CSV:n i Excel och spara om den.")
+        except Exception as e:
+            print(f"❌ Kunde inte läsa CSV: {e}")
+            print("\nTips: Öppna CSV:n i TextEdit och kontrollera formatet.")
+            print("Förväntade kolumner: company_id, company_name, matched_name, score, etc.")
             return
 
     print(f"✓ Läste {len(df)} fuzzy matches från {csv_path.name}")
