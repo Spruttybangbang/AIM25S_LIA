@@ -4,14 +4,22 @@ Detta projekt integrerar svenska AI-företag med SCB:s företagsregister för at
 
 ## 📊 Resultat
 
-**Total matchningar:** 360 företag
-- Automatiska matchningar: 357 (99.2% med score ≥ 85)
-- Manuella godkännanden: 3 (high low scores 80-84)
+**Total matchningar:** 360 företag av 1113 (32.3%)
 
-**Av 158 "no candidates" företag:**
-- 11 matchades automatiskt (7%)
-- 32 low score (20%)
-- 115 inga kandidater (73% - mestadels utländska företag/startups)
+**Kvalitetsfördelning:**
+- ✅ Perfekta matchningar (100%): 311 företag
+- 🟢 Mycket bra (95-99%): 14 företag
+- 🟡 Bra (90-94%): 22 företag
+- 🟠 Godkända (85-89%): 10 företag
+- 🔴 Låga (<85%): 3 företag
+
+**Matchningskällor:**
+- SCB API-integration: 330 företag (ursprunglig körning)
+- Bulk-matchning: 30 företag (från 1.8M företagsdataset)
+
+**Omatchade företag (753):**
+- Mestadels myndigheter, universitet och utländska företag
+- Företag utan organisationsnummer i SCB:s register
 
 ## 📁 Projektstruktur
 
@@ -32,7 +40,10 @@ AIM25S_LIA/
 │   ├── import_manual_matches.py
 │   ├── import_manual_matches_direct.py
 │   ├── manual_search_helper.py
-│   └── review_high_low_scores_helper.py
+│   ├── review_high_low_scores_helper.py
+│   ├── bulk_scb_matcher.py           # Bulk-matchning (1.8M företag)
+│   ├── import_bulk_fuzzy_matches.py  # Importera granskade fuzzy matches
+│   └── remove_fuzzy_matches.py       # Ta bort felaktiga matchningar
 │
 ├── results/                  # Alla CSV-resultat
 │   ├── scb_matches.csv      # Huvudresultat (alla matchningar)
@@ -46,8 +57,12 @@ AIM25S_LIA/
 │
 └── docs/                     # Dokumentation
     ├── SCB_INTEGRATION_V2_GUIDE.md
-    └── SCB_ANALYS_README.md
+    ├── SCB_ANALYS_README.md
+    └── BULK_MATCHER_GUIDE.md        # Guide för bulk-matchning
 ```
+
+**Nya filer:**
+- `BULK_MATCHING_QUICKSTART.md` - Snabbguide för bulk-matchning
 
 ## ⚙️ Konfiguration
 
@@ -90,6 +105,24 @@ cd tools
 python3 import_manual_matches_direct.py --csv ../results/manual_matches_20251109_184431.csv
 ```
 
+### 4. Bulk-matchning (1.8M SCB-företag)
+
+**Ny funktion!** Matcha mot hela SCB:s företagsregister (1.8 miljoner företag):
+
+```bash
+cd tools
+python3 bulk_scb_matcher.py \
+    --bulk /path/to/scb_bulk.txt \
+    --db ../ai_companies.db
+```
+
+**Säkerhetsdesign:**
+- ✅ Perfekta matchningar (100%) → Auto-godkända till databasen
+- 🔍 Fuzzy matchningar (85-99%) → Exporteras till CSV för manuell granskning
+- 📋 Granska och importera: `import_bulk_fuzzy_matches.py`
+
+Se `BULK_MATCHING_QUICKSTART.md` för detaljerad guide!
+
 ## 🔧 Viktiga förbättringar
 
 ### search_variants
@@ -109,18 +142,20 @@ Scriptet genererar nu flera söknamn-varianter:
 
 ## 📈 Statistik per körning
 
-### Manuella matchningar (14 företag)
-- ✓ **11 lyckades** (79%)
-- ⚠ **3 low score** (Saab 84, Preem 82, Stena 76)
+### SCB API-integration (ursprunglig)
+- ✓ **330 matchningar** från API-anrop
+- Kombinerar automatisk fuzzy matching med manuell granskning
+- Använder search_variants för förbättrad träffsäkerhet
 
-### Retry på 158 företag
-- ✓ **11 matchningar** (7%)
-- ⚠ **32 low score** (20%)
-- ✗ **115 no candidates** (73%)
+### Bulk-matchning (ny!)
+- ✓ **30 nya matchningar** från 1.8M företagsdataset
+- 🎯 Hög precision genom granskning av fuzzy matches
+- 📊 Totalt 360 företag berikade (32.3% av databasen)
 
-### High low scores granskning (9 företag, score 80-84)
-- ✓ **3 godkända**: Dell Technologies, Fotanofe AB, Ledarna
-- ✗ **6 avvisade**: Felaktiga fuzzy matches
+### Kvalitetssäkring
+- Manuella matchningar: 14 företag granskade
+- High-score fuzzy matches: 9 företag granskade, 3 godkända
+- Bulk fuzzy matches: Alla granskade innan import
 
 ## 🛠 Krav
 
@@ -151,20 +186,23 @@ Alternativt, ändra med `--cert` flaggan vid körning.
 ## 📚 Dokumentation
 
 Se `docs/` för detaljerad dokumentation:
-- `SCB_INTEGRATION_V2_GUIDE.md` - Guide för SCB-integration
+- `SCB_INTEGRATION_V2_GUIDE.md` - Guide för SCB API-integration
 - `SCB_ANALYS_README.md` - Analys av resultat
+- `BULK_MATCHER_GUIDE.md` - Komplett guide för bulk-matchning
+- `BULK_MATCHING_QUICKSTART.md` - Snabbstart för bulk-matchning
 
-## 🎯 Nästa steg
+## 🎯 Projektets status
 
-1. Importera de 3 godkända high-low scores:
-   ```bash
-   cd scripts
-   python3 retry_scb_search.py --input ../results/approved_high_low_for_import.csv
-   ```
+**✅ Slutfört:**
+- SCB API-integration med 330 matchningar
+- Bulk-matchning mot 1.8M företag med 30 nya matchningar
+- Total matchningsgrad: 32.3% (360 av 1113 företag)
+- Alla tools dokumenterade och testade
 
-2. Granska "no candidates" (115 st) manuellt vid behov
-
-3. Exportera slutgiltig rapport över alla matchningar
+**Kvarvarande omatchade företag (753):**
+- Mestadels myndigheter, universitet och utländska företag
+- Företag som inte finns i SCB:s företagsregister
+- Möjlig framtida förbättring: Internationella företagsregister
 
 ## 📊 Exempel-output
 
