@@ -37,3 +37,9 @@ Thumbs.db
 credentials.json
 .env
 config.ini
+
+# Bulk data files (too large for git)
+data/
+*bulk*.txt
+*bulk*.zip
+scb_bulk*
