@@ -1,0 +1,155 @@
+id;name;website;status;confidence
+1735;Agido Management Consulting AB;agido.se;verified_https;95
+1556;Akademiska sjukhuset / Uppsala University Hospital;akademiska.se;verified_https;95
+1503;Almi;almi.se;verified_https;95
+2145;Almi;almi.se;verified_https;95
+1555;Alstom;alstom.se;verified_http;95
+1602;Appalume AB;appalume.se;verified_https;95
+1790;Claesson & Partners;claessonpartners.se;verified_https;95
+1891;Eningo AB;eningo.se;verified_https;95
+1361;Ensolution AB;ensolution.se;verified_https;95
+2207;Entercard;entercard.se;verified_https;95
+2024;Finansinspektionen;finansinspektionen.se;verified_https;95
+1504;Folksam;folksam.se;verified_https;95
+1639;Försäkringskassan;försäkringskassan.se;verified_http;95
+1759;Fortos Management Consulting;fortos.se;verified_https;95
+2254;GlobalConnect;globalconnect.se;verified_https;95
+1562;Handelsbanken;handelsbanken.se;verified_https;95
+1385;Helsingborg Stad;helsingborg.se;verified_https;95
+1320;anch.AI;https://anch.ai/;verified_http;95
+2095;Berget AI;https://berget.ai/;verified_https;95
+2194;EdMon;https://edmon.ai/;verified_https;95
+1635;Flow Innovate Sweden AB;https://flowinnovate.com/;verified_http;95
+1670;Maverick at Nexer AB;https://nexergroup.com/sv/maverick/vi-ar-maverick/;verified_http;95
+1435;Responsr;https://responsr.io/;verified_https;95
+1896;Svava;https://svava.io/;verified_https;95
+1334;Segula Technologies AB;https://sverige.segulatechnologies.com/sv/;verified_https;95
+1541;Toloka;https://toloka.ai/;verified_https;95
+1908;Fastlane Devs AB;https://www.fastlanedevs.com/;verified_https;95
+2148;GF Piping System;https://www.gfps.com/sv-se.html;verified_https;95
+2215;HAX AB;https://www.haxtechnologies.eu/sv/about-svenska/;verified_https;95
+2298;If Insurance;https://www.if.se;verified_https;95
+1822;Pax8;https://www.pax8.com/en-eu/;verified_https;95
+1472;Thesamurai;https://www.thesamur.ai/;verified_https;95
+1657;Vitec Software group;https://www.vitecsoftware.com/;verified_https;95
+1819;Inera AB;inera.se;verified_https;95
+1360;IVL Svenska Miljöinstitutet AB;ivl.se;verified_https;95
+1964;Kapharos;kapharos.se;verified_http;95
+1626;KDC SWEDEN;kdc.se;verified_https;95
+1733;Klarna Bank AB;klarnabank.com;verified_http;95
+1727;Knowit;knowit.se;verified_https;95
+1373;Kriminalvården;kriminalvården.se;verified_http;95
+1714;Länsförsäkringar Bergslagen;länsförsäkringar.se;verified_http;95
+2061;Lindahl;lindahl.se;verified_https;95
+1581;Mannheimer Swartling;mannheimerswartling.se;verified_http;95
+1692;Nimo AI;nimoai.com;verified_https;95
+1973;PA Consulting;paconsulting.se;verified_http;95
+2105;Quantic Ceos New Media;quantic.se;verified_https;95
+1631;Qumea;qumea.se;verified_http;95
+1632;Qumea;qumea.se;verified_http;95
+1715;Region Stockholm;regionstockholm.se;verified_https;95
+1270;Region Uppsala;regionuppsala.se;verified_https;95
+1855;Region Värmland;regionvärmland.se;verified_https;95
+2043;Saab AB;saab.se;verified_http;95
+1434;SAYP;sayp.se;verified_https;95
+1523;Scania Sverige;scania.se;verified_https;95
+2157;Sigholm Tech;sigholmtech.se;verified_http;95
+1122;Skatteverket;skatteverket.se;verified_https;95
+1708;SKV;skv.com;verified_http;95
+1572;Socialstyrelsen;socialstyrelsen.se;verified_https;95
+1404;Södertälje kommun;södertäljekommun.se;verified_http;95
+1271;Softhouse Consulting;softhouseconsulting.se;verified_https;95
+1753;Sollentuna kommun;sollentuna.se;verified_https;95
+1246;Spotscale AB;spotscale.se;verified_https;95
+1874;Techstep;techstep.se;verified_https;95
+1520;Telia Sverige AB;telia.se;verified_https;95
+1772;Vesiro;vesiro.com;verified_https;95
+2071;Vidhance;vidhance.com;verified_https;95
+1355;NearbyStore - Autonomus Grocery stores;;;
+1800;Negrete Marknadskommunikation;;;
+1120;NVIDIA;;;
+2098;Övik Energi AB;;;
+1603;Petri Management;;;
+1734;Pool kommunikationsbyrå;;;
+2048;Preem AB;;;
+2138;Regeringskansliet;;;
+2193;Region Stockholm, Trafikförvaltningen;;;
+1765;Region Blekinge;;;
+1365;Region Västerbotten;;;
+1774;Rikard Hedenblad;;;
+1888;SeederDeBoer;;;
+1876;Slack;;;
+1621;Södra Älvsborgs Sjukhus;;;
+2100;Soul Rehab;;;
+1766;Studentlitteratur;;;
+1506;Synai;;;
+1661;Tellus Fonder AB;;;
+2316;Toolverse AI;;;
+1907;Triangulate;;;
+1807;UNperfect UNited;;;
+1646;Vaggeryds kommun;;;
+1777;W2X LABS;;;
+1660;Empower;;;
+1802;AI-Coachen Mikael Vilkas;;;
+1645;Ålands landskapsregering;;;
+1471;Ambition Group AB;;;
+1487;Anders J Larsson Production AB;;;
+1899;Appfrilans;;;
+1462;ASF, Malmö stad;;;
+1797;AXION;;;
+1681;Bilfinger Engineering and Maintenance;;;
+1568;Bjerking AB;;;
+1678;Borlänge kommun;;;
+2171;Bouvier Advisory;;;
+2130;BUILD:ology;;;
+2187;Cadeva AB;;;
+2201;DecKid;;;
+2052;Epachois Hospital Beds - Innovation;;;
+1887;Eskilstuna Strängnäs Energi och Miljö;;;
+2073;European Working Group of Competent Authorities on AI;;;
+1525;EVONS Creative Voice Solutions AB;;;
+2176;Fatih Celik;;;
+2225;Gävle Logistikbyrå AB;;;
+1750;Gray Oncology Solutions;;;
+1483;Griffeye Technologies AB;;;
+2010;Hällefors kommun;;;
+1852;HC-Tec AB;;;
+1673;Herrljunga kommun;;;
+2168;holminnovation;;;
+1580;Impatient AB;;;
+2165;Infra Motion Labs;;;
+1977;Ingrid Segerstedts gymnasium;;;
+2033;Johan Lundberg AB;;;
+1980;Karlskoga Kommun;;;
+1794;KC region Nord AB;;;
+2179;Kristianstad kommun Tekniska Förvaltningen;;;
+1697;Kungsbacka Kommun;;;
+1517;Lagolas AB;;;
+1653;LINK ARKITEKTUR;;;
+2106;Lomma kommun;;;
+1929;Luleå Lokaltrafik AB;;;
+1609;Lunicore Student Consulting;;;
+2153;Manomet Rock AB;;;
+2110;AB Mareld Technologies;;;
+1860;Marks kommun;;;
+2218;Mitigate AI Services;;;
+1601;M.O.A.A. Consulting AB;;;
+1878;Municipality of Borås;;;
+1340;Ericsson;;;
+1584;Höörs kommun;;;
+1616;Romerska katolska kyrkan;;;
+1751;DiagnosticsXAI;;;
+1754;Stadsbyggnadskontoret, Stockholm stad;;;
+1755;Härnösands kommun;;;
+1788;Archiblad's Adventures AB;;;
+1828;Fritidsförvaltningen, Malmö stad;;;
+1886;Linnéa Borg;;;
+1945;Serviceförvaltningen,  Malmö stad;;;
+2013;Göliska IT;;;
+2054;Studieförbundet Vuxenskolan Väst;;;
+2085;Stadsledningskontoret, Stockholm stad;;;
+2109;Jönköping University;;;
+2120;Nosterix;;;
+2172;Trafikförvaltningen, Region Stockholm;;;
+2186;Kulturförvaltningen, Stockholm stad;;;
+2197;Högskoleservice i Jönköping AB;;;
