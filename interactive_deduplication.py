@@ -73,7 +73,7 @@ def get_all_company_data(conn, company_id):
     cursor.execute("""
         SELECT ac.name
         FROM company_ai_capabilities cac
-        JOIN ai_capabilities ac ON cac.ai_capability_id = ac.id
+        JOIN ai_capabilities ac ON cac.capability_id = ac.id
         WHERE cac.company_id = ?
     """, (company_id,))
     data['ai_capabilities'] = [row[0] for row in cursor.fetchall()]
