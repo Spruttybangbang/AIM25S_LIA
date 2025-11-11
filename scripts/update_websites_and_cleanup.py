@@ -225,6 +225,7 @@ def main():
     parser.add_argument('--db', default='databases/ai_companies.db', help='Sökväg till databas')
     parser.add_argument('--dry-run', action='store_true', help='Visa vad som skulle hända utan att ändra något')
     parser.add_argument('--force-delete', action='store_true', help='Radera även företag med data (FARLIGT!)')
+    parser.add_argument('--yes', action='store_true', help='Hoppa över bekräftelse (automatiskt ja)')
     args = parser.parse_args()
 
     print("=" * 70)
@@ -274,12 +275,14 @@ def main():
         if args.force_delete:
             print("   ⚠️  FORCE DELETE aktiverat - raderar även företag med data!")
 
-    response = input("\nFortsätta? (skriv 'ja' för att bekräfta): ")
-
-    if response.lower() != 'ja':
-        print("\n❌ Avbrutet av användaren")
-        conn.close()
-        return
+    if not args.yes:
+        response = input("\nFortsätta? (skriv 'ja' för att bekräfta): ")
+        if response.lower() != 'ja':
+            print("\n❌ Avbrutet av användaren")
+            conn.close()
+            return
+    else:
+        print("\n✓ --yes flagga satt, fortsätter automatiskt...")
 
     # Genomför ändringar
     print("\n" + "=" * 70)
