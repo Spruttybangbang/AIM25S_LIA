@@ -7,9 +7,14 @@ Varje företag = en rad, all tillgänglig data i respektive kolumner.
 import sqlite3
 import pandas as pd
 from datetime import datetime
+import os
 
 def connect_db():
-    return sqlite3.connect('ai_companies.db')
+    # Path relative to project root
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.join(script_dir, '..', '..')
+    db_path = os.path.join(project_root, 'databases', 'ai_companies.db')
+    return sqlite3.connect(db_path)
 
 def export_companies_without_scb():
     """Export all companies without SCB data to CSV."""

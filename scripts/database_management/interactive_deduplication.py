@@ -11,7 +11,7 @@ from datetime import datetime
 from difflib import SequenceMatcher
 
 def connect_db():
-    return sqlite3.connect('ai_companies.db')
+    return sqlite3.connect(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'databases', 'ai_companies.db'))
 
 def backup_database():
     """Create backup before making changes."""

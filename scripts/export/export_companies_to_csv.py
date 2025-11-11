@@ -12,7 +12,12 @@ import pandas as pd
 from datetime import datetime
 
 def connect_db():
-    return sqlite3.connect('ai_companies.db')
+    # Path relative to project root
+    import os
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.join(script_dir, '..', '..')
+    db_path = os.path.join(project_root, 'databases', 'ai_companies.db')
+    return sqlite3.connect(db_path)
 
 def get_relational_data(conn):
     """Get all relational data from junction tables."""
