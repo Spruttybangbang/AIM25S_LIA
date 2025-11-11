@@ -25,44 +25,67 @@ Detta projekt integrerar svenska AI-företag med SCB:s företagsregister för at
 
 ```
 AIM25S_LIA/
-├── ai_companies.db           # Huvuddatabas med företagsdata
-├── README.md                 # Denna fil
+├── README.md                          # Denna fil
+├── config.example.ini                 # Exempelkonfiguration
 │
-├── scripts/                  # Huvudscripts
-│   ├── scb_integration_v2.py # Original SCB-integration
-│   ├── retry_scb_search.py   # Retry-sökning med search_variants
-│   └── retry_no_candidates.py # Kategorisering av no-candidates
+├── databases/                         # SQLite-databaser
+│   ├── ai_companies.db               # Huvuddatabas (906 företag)
+│   └── ai_others.db                  # Sekundär databas (173 org)
 │
-├── tools/                    # Hjälpscripts
+├── scripts/                          # Alla Python-scripts
+│   ├── analysis/                     # Dataanalys
+│   │   ├── analyze_database.py
+│   │   ├── analyze_duplicates.py
+│   │   ├── analyze_improvements.py
+│   │   └── detailed_pattern_analysis.py
+│   ├── database_management/          # Databashantering
+│   │   ├── delete_companies.py
+│   │   ├── move_companies_to_others.py
+│   │   ├── verify_databases.py
+│   │   ├── check_db.py
+│   │   ├── interactive_deduplication.py
+│   │   └── fas1_snabba_vinster.py
+│   ├── export/                       # Export till CSV
+│   │   ├── export_companies_to_csv.py
+│   │   └── export_companies_without_scb.py
+│   └── scb/                          # SCB-integration
+│       ├── scb_integration_v2.py
+│       ├── retry_scb_search.py
+│       └── retry_no_candidates.py
+│
+├── tools/                            # SCB-hjälpverktyg
 │   ├── analyze_scb_issues.py
 │   ├── approve_good_matches.py
+│   ├── bulk_scb_matcher.py
 │   ├── explore_issues_interactive.py
+│   ├── import_bulk_fuzzy_matches.py
 │   ├── import_manual_matches.py
 │   ├── import_manual_matches_direct.py
 │   ├── manual_search_helper.py
-│   ├── review_high_low_scores_helper.py
-│   ├── bulk_scb_matcher.py           # Bulk-matchning (1.8M företag)
-│   ├── import_bulk_fuzzy_matches.py  # Importera granskade fuzzy matches
-│   └── remove_fuzzy_matches.py       # Ta bort felaktiga matchningar
+│   ├── remove_fuzzy_matches.py
+│   └── review_high_low_scores_helper.py
 │
-├── results/                  # Alla CSV-resultat
-│   ├── scb_matches.csv      # Huvudresultat (alla matchningar)
-│   ├── scb_issues.csv       # Problem från första körningen
-│   ├── retry_scb_issues.csv # Problem från retry
-│   └── ... (övriga CSV-filer)
+├── exports/                          # CSV-exports
+│   ├── companies_all_*.csv
+│   ├── companies_with_scb_*.csv
+│   └── companies_without_scb_*.csv
 │
-├── logs/                     # Terminal-feedback från körningar
-│   ├── snippet_manual_matches_terminal_feedback.txt
-│   └── snippet_twenty_tests_terminal_feedback.txt
+├── results/                          # SCB-matchningsresultat
+│   ├── scb_matches.csv
+│   ├── scb_issues.csv
+│   └── ... (övriga resultatfiler)
 │
-└── docs/                     # Dokumentation
-    ├── SCB_INTEGRATION_V2_GUIDE.md
+├── logs/                             # Loggfiler
+│
+└── docs/                             # Dokumentation
+    ├── BULK_MATCHER_GUIDE.md
+    ├── BULK_MATCHING_QUICKSTART.md
+    ├── DATABAS_GENOMLYSNING_RAPPORT.md
+    ├── DEDUPLICATION_GUIDE.md
+    ├── FAS1_RESULTATRAPPORT.md
     ├── SCB_ANALYS_README.md
-    └── BULK_MATCHER_GUIDE.md        # Guide för bulk-matchning
+    └── SCB_INTEGRATION_V2_GUIDE.md
 ```
-
-**Nya filer:**
-- `BULK_MATCHING_QUICKSTART.md` - Snabbguide för bulk-matchning
 
 ## ⚙️ Konfiguration
 
@@ -77,7 +100,7 @@ cp config.example.ini config.ini
 ```ini
 [SCB]
 cert_path = /path/to/your/scb_certificate.pem
-database_path = ai_companies.db
+database_path = databases/ai_companies.db
 ```
 
 **Säkerhet:** `config.ini` är redan tillagd i `.gitignore` och kommer aldrig att commitas. Certifikatsökvägen delas inte publikt.
@@ -87,22 +110,19 @@ database_path = ai_companies.db
 ### 1. Grundläggande SCB-integration
 
 ```bash
-cd scripts
-python3 scb_integration_v2.py --limit 100
+python3 scripts/scb/scb_integration_v2.py --limit 100
 ```
 
 ### 2. Retry-sökning med förbättrade varianter
 
 ```bash
-cd scripts
-python3 retry_scb_search.py --input ../results/no_candidates_need_review.csv --limit 20
+python3 scripts/scb/retry_scb_search.py --input results/no_candidates_need_review.csv --limit 20
 ```
 
 ### 3. Importera manuella matchningar
 
 ```bash
-cd tools
-python3 import_manual_matches_direct.py --csv ../results/manual_matches_20251109_184431.csv
+python3 tools/import_manual_matches_direct.py --csv results/manual_matches_20251109_184431.csv
 ```
 
 ### 4. Bulk-matchning (1.8M SCB-företag)
@@ -110,10 +130,9 @@ python3 import_manual_matches_direct.py --csv ../results/manual_matches_20251109
 **Ny funktion!** Matcha mot hela SCB:s företagsregister (1.8 miljoner företag):
 
 ```bash
-cd tools
-python3 bulk_scb_matcher.py \
+python3 tools/bulk_scb_matcher.py \
     --bulk /path/to/scb_bulk.txt \
-    --db ../ai_companies.db
+    --db databases/ai_companies.db
 ```
 
 **Säkerhetsdesign:**
