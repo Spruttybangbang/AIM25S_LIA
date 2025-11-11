@@ -24,7 +24,8 @@ def analyze_csv(csv_file):
     Analysera CSV:n och dela upp i uppdateringar vs raderingar.
     """
     with open(csv_file, 'r', encoding='utf-8') as f:
-        reader = csv.DictReader(f)
+        # Hantera både ; och , som delimiter
+        reader = csv.DictReader(f, delimiter=';')
         rows = list(reader)
 
     updates = []
