@@ -208,6 +208,52 @@ def scrape_website(url, company_name):
     return result
 
 
+def get_company_metadata(cursor, company_id):
+    """
+    Hämta metadata från databasen för ett företag.
+    """
+    metadata = {
+        'sectors': [],
+        'domains': [],
+        'dimensions': [],
+        'ai_capabilities': []
+    }
+
+    # Hämta sectors
+    cursor.execute('''
+        SELECT s.name FROM sectors s
+        JOIN company_sectors cs ON s.id = cs.sector_id
+        WHERE cs.company_id = ?
+    ''', (company_id,))
+    metadata['sectors'] = [row[0] for row in cursor.fetchall()]
+
+    # Hämta domains
+    cursor.execute('''
+        SELECT d.name FROM domains d
+        JOIN company_domains cd ON d.id = cd.domain_id
+        WHERE cd.company_id = ?
+    ''', (company_id,))
+    metadata['domains'] = [row[0] for row in cursor.fetchall()]
+
+    # Hämta dimensions
+    cursor.execute('''
+        SELECT d.name FROM dimensions d
+        JOIN company_dimensions cd ON d.id = cd.dimension_id
+        WHERE cd.company_id = ?
+    ''', (company_id,))
+    metadata['dimensions'] = [row[0] for row in cursor.fetchall()]
+
+    # Hämta AI capabilities
+    cursor.execute('''
+        SELECT ac.name FROM ai_capabilities ac
+        JOIN company_ai_capabilities cac ON ac.id = cac.capability_id
+        WHERE cac.company_id = ?
+    ''', (company_id,))
+    metadata['ai_capabilities'] = [row[0] for row in cursor.fetchall()]
+
+    return metadata
+
+
 def main():
     parser = argparse.ArgumentParser(description='Skrapa text från företagshemsidor')
     parser.add_argument('--db', default='databases/ai_companies.db', help='Sökväg till databas')
@@ -272,6 +318,13 @@ def main():
         print(f"ID: {company_id} | {name}")
         print(f"Typ: {company_type} | Website: {website}")
 
+        # Hämta metadata från databas
+        metadata = get_company_metadata(cursor, company_id)
+
+        if metadata['sectors'] or metadata['domains']:
+            print(f"📊 Metadata: {len(metadata['sectors'])} sectors, {len(metadata['domains'])} domains, {len(metadata['dimensions'])} dimensions")
+
+        # Skrapa hemsida
         scrape_result = scrape_website(website, name)
 
         results.append({
@@ -281,6 +334,10 @@ def main():
             'type': company_type,
             'scraped_text': scrape_result['scraped_text'],
             'meta_description': scrape_result['meta_description'] or '',
+            'sectors': ', '.join(metadata['sectors']),
+            'domains': ', '.join(metadata['domains']),
+            'dimensions': ', '.join(metadata['dimensions']),
+            'ai_capabilities': ', '.join(metadata['ai_capabilities']),
             'status': scrape_result['status'],
             'status_code': scrape_result['status_code'] or ''
         })
@@ -298,7 +355,8 @@ def main():
     print("=" * 70)
 
     with open(args.output, 'w', newline='', encoding='utf-8') as f:
-        fieldnames = ['id', 'name', 'website', 'type', 'scraped_text', 'meta_description', 'status', 'status_code']
+        fieldnames = ['id', 'name', 'website', 'type', 'scraped_text', 'meta_description',
+                      'sectors', 'domains', 'dimensions', 'ai_capabilities', 'status', 'status_code']
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(results)
