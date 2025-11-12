@@ -31,6 +31,20 @@ try:
 except ImportError:
     from duckduckgo_search import DDGS
 
+try:
+    from fuzzywuzzy import fuzz
+except ImportError:
+    # Fallback om fuzzywuzzy inte finns installerad
+    class fuzz:
+        @staticmethod
+        def ratio(a, b):
+            # Enkel likhetsmatchning baserad på gemensamma ord
+            a_lower = a.lower()
+            b_lower = b.lower()
+            if a_lower in b_lower or b_lower in a_lower:
+                return 90
+            return 50
+
 # ============================================================================
 # KONFIGURATION
 # ============================================================================
@@ -39,12 +53,10 @@ DB_PATH = Path(__file__).parent.parent.parent / "databases" / "ai_companies.db"
 RATE_LIMIT_DELAY = 1.5  # Sekunder mellan sökningar
 TIMEOUT = 15
 
-# Sökvariabler att använda
+# Sökvariabler att använda (fokusera på de sajter som faktiskt fungerar)
 SEARCH_TERMS = [
-    "organisationsnummer",
-    "juridiskt namn",
-    "allabolag",
-    "bolagsfakta"
+    "site:allabolag.se",
+    "site:bolagsfakta.se"
 ]
 
 # ============================================================================
@@ -146,8 +158,8 @@ def duckduckgo_search(query: str) -> Tuple[str, str, str]:
     """
     try:
         with DDGS() as ddgs:
-            # Hämta första 5 resultaten (ökar chansen att hitta rätt)
-            results = list(ddgs.text(query, region='se-sv', max_results=5))
+            # Hämta första 2 resultaten (annonser filtreras oftast bort automatiskt)
+            results = list(ddgs.text(query, region='se-sv', max_results=2))
 
             if not results:
                 return "", "[Inga resultat hittades]", ""
@@ -181,45 +193,78 @@ def duckduckgo_search(query: str) -> Tuple[str, str, str]:
 # KVALIFICERAD GISSNING
 # ============================================================================
 
+def normalize_company_name(name: str) -> str:
+    """Normalisera företagsnamn för matchning"""
+    if not name:
+        return ""
+
+    # Ta bort vanliga suffix
+    name = name.upper()
+    for suffix in [' AB', ' AKTIEBOLAG', ' HB', ' KB', ' EK. FÖR.']:
+        if name.endswith(suffix):
+            name = name[:-len(suffix)]
+
+    return name.strip()
+
+
 def suggest_best_orgnr(
-    all_orgnr: List[str],
-    company_name: str,
-    owner: Optional[str],
-    search_results: Dict[str, str]
+    orgnr_name_pairs: List[Tuple[str, str]],
+    searched_company_name: str,
+    owner: Optional[str]
 ) -> Tuple[Optional[str], float, str]:
     """
-    Gör en kvalificerad gissning på vilket org.nr som är rätt
+    Gör en kvalificerad gissning på vilket org.nr som är rätt baserat på namnmatchning
+
+    Args:
+        orgnr_name_pairs: Lista av (org.nr, extraherat_namn) par
+        searched_company_name: Det företagsnamn vi söker på
+        owner: Owner-information om tillgängligt
 
     Returns:
         (orgnr, confidence_score, reason)
     """
-    if not all_orgnr:
+    if not orgnr_name_pairs:
         return None, 0.0, "Inga org.nr hittades"
 
     # Om bara ett org.nr hittades
-    if len(all_orgnr) == 1:
-        return all_orgnr[0], 0.9, "Endast ett org.nr hittades"
+    if len(orgnr_name_pairs) == 1:
+        orgnr, name = orgnr_name_pairs[0]
+        return orgnr, 0.9, f"Endast ett org.nr hittades: {name}"
 
-    # Räkna frekvens
-    counter = Counter(all_orgnr)
-    most_common = counter.most_common(1)[0]
-    most_common_orgnr = most_common[0]
-    frequency = most_common[1]
+    # Normalisera det sökta namnet
+    searched_normalized = normalize_company_name(searched_company_name)
 
-    # Om ett org.nr förekommer flera gånger
-    if frequency > 1:
-        confidence = min(0.95, 0.7 + (frequency * 0.1))
-        return most_common_orgnr, confidence, f"Förekommer {frequency} gånger i sökresultaten"
+    # Beräkna likhet mellan sökt namn och varje extraherat namn
+    best_match = None
+    best_score = 0
+    best_orgnr = None
 
-    # Annars: Flera olika org.nr, välj första från "allabolag" eller "bolagsfakta"
-    for term in ["allabolag", "bolagsfakta"]:
-        result_text = search_results.get(term, "")
-        orgnr_in_result = extract_orgnr_candidates(result_text)
-        if orgnr_in_result:
-            return orgnr_in_result[0], 0.6, f"Första org.nr från {term}-sökning"
+    for orgnr, extracted_name in orgnr_name_pairs:
+        if not extracted_name:
+            continue
 
-    # Fallback: första hittade org.nr
-    return all_orgnr[0], 0.5, "Första hittade org.nr (osäker)"
+        extracted_normalized = normalize_company_name(extracted_name)
+
+        # Fuzzy matching
+        similarity = fuzz.ratio(searched_normalized, extracted_normalized)
+
+        if similarity > best_score:
+            best_score = similarity
+            best_match = extracted_name
+            best_orgnr = orgnr
+
+    # Om vi hittade en bra matchning (>70% likhet)
+    if best_score >= 70:
+        confidence = min(0.95, best_score / 100.0)
+        return best_orgnr, confidence, f"Bästa namnmatchning: '{best_match}' ({best_score}% likhet)"
+
+    # Fallback: Om vi inte kunde matcha på namn, ta första från allabolag
+    # (antar att första paret är från allabolag om vi har det)
+    if orgnr_name_pairs:
+        orgnr, name = orgnr_name_pairs[0]
+        return orgnr, 0.5, f"Första hittade: {name or orgnr} (låg namnlikhet)"
+
+    return None, 0.0, "Kunde inte bestämma rätt org.nr"
 
 
 # ============================================================================
@@ -290,12 +335,13 @@ def search_company(
     search_results = {}
     all_orgnr = []
     all_extracted_names = []
+    orgnr_name_pairs = []  # Lista av (org.nr, namn) par för matchning
 
     # Sök med varje sökterm
     for i, term in enumerate(SEARCH_TERMS, 1):
         query = f"{name} {term}"
 
-        print(f"   [{i}/4] Söker: '{query}'")
+        print(f"   [{i}/2] Söker: '{query}'")
 
         url, text, all_urls = duckduckgo_search(query)
 
@@ -303,7 +349,7 @@ def search_company(
         result[f"search_query_{i}"] = query
         result[f"result_url_{i}"] = url
         result[f"all_urls_{i}"] = all_urls[:300]  # Spara flera URLs
-        result[f"result_text_{i}"] = text[:800]  # Öka från 500 till 800 tecken
+        result[f"result_text_{i}"] = text[:800]
 
         search_results[term] = text
 
@@ -319,6 +365,19 @@ def search_company(
 
         all_orgnr.extend(orgnr_found)
 
+        # Koppla ihop org.nr med namn
+        # Om vi hittade både org.nr och namn, para ihop dem
+        if orgnr_found and company_name_found:
+            # Första org.nr hör troligen till det extraherade namnet
+            orgnr_name_pairs.append((orgnr_found[0], company_name_found))
+            # Lägg till resten utan namn
+            for extra_orgnr in orgnr_found[1:]:
+                orgnr_name_pairs.append((extra_orgnr, ""))
+        elif orgnr_found:
+            # Org.nr utan namn
+            for orgnr in orgnr_found:
+                orgnr_name_pairs.append((orgnr, ""))
+
         print(f"      → Hittade: {len(orgnr_found)} org.nr", end="")
         if company_name_found:
             print(f" + namn: {company_name_found[:40]}")
@@ -331,8 +390,8 @@ def search_company(
 
     # Om vi har owner, sök på det också
     if owner and owner.strip():
-        query = f"{owner} organisationsnummer"
-        print(f"   [5/5] Söker på owner: '{query}'")
+        query = f"{owner} site:allabolag.se"
+        print(f"   [3/3] Söker på owner: '{query}'")
 
         url, text, all_urls = duckduckgo_search(query)
         result["search_query_owner"] = query
@@ -351,6 +410,15 @@ def search_company(
 
         all_orgnr.extend(orgnr_found)
 
+        # Koppla ihop org.nr med namn för owner
+        if orgnr_found and company_name_found:
+            orgnr_name_pairs.append((orgnr_found[0], company_name_found))
+            for extra_orgnr in orgnr_found[1:]:
+                orgnr_name_pairs.append((extra_orgnr, ""))
+        elif orgnr_found:
+            for orgnr in orgnr_found:
+                orgnr_name_pairs.append((orgnr, ""))
+
         print(f"      → Hittade: {len(orgnr_found)} org.nr", end="")
         if company_name_found:
             print(f" + namn: {company_name_found[:40]}")
@@ -367,9 +435,9 @@ def search_company(
     unique_names = list(dict.fromkeys(all_extracted_names))
     result["all_extracted_names"] = " | ".join(unique_names)
 
-    # Gör kvalificerad gissning
+    # Gör kvalificerad gissning baserat på namnmatchning
     suggested, confidence, reason = suggest_best_orgnr(
-        unique_orgnr, name, owner, search_results
+        orgnr_name_pairs, name, owner
     )
 
     result["suggested_orgnr"] = suggested or ""
@@ -397,21 +465,13 @@ def export_to_csv(results: List[Dict], output_path: Path):
         # Företagsinfo
         "company_id", "company_name", "company_type", "owner", "website",
 
-        # Sökresultat 1: organisationsnummer
+        # Sökresultat 1: allabolag
         "search_query_1", "result_url_1", "all_urls_1", "result_text_1",
         "found_orgnr_1", "extracted_name_1",
 
-        # Sökresultat 2: juridiskt namn
+        # Sökresultat 2: bolagsfakta
         "search_query_2", "result_url_2", "all_urls_2", "result_text_2",
         "found_orgnr_2", "extracted_name_2",
-
-        # Sökresultat 3: allabolag
-        "search_query_3", "result_url_3", "all_urls_3", "result_text_3",
-        "found_orgnr_3", "extracted_name_3",
-
-        # Sökresultat 4: bolagsfakta
-        "search_query_4", "result_url_4", "all_urls_4", "result_text_4",
-        "found_orgnr_4", "extracted_name_4",
 
         # Owner-sökning (om tillämpligt)
         "search_query_owner", "result_url_owner", "all_urls_owner", "result_text_owner",
@@ -420,7 +480,7 @@ def export_to_csv(results: List[Dict], output_path: Path):
         # Sammanställning
         "all_found_orgnr", "all_extracted_names",
 
-        # Scriptets gissning
+        # Scriptets gissning (nu med namnmatchning!)
         "suggested_orgnr", "confidence_score", "suggestion_reason",
 
         # Manuell verifiering
@@ -494,8 +554,9 @@ def main():
 
     # Fråga om bekräftelse (om inte --yes)
     if not args.yes:
-        print(f"\n⚠️  Detta kommer göra {len(companies) * 4} sökningar på DuckDuckGo")
-        print(f"   Med {RATE_LIMIT_DELAY}s delay = ~{len(companies) * 4 * RATE_LIMIT_DELAY / 60:.0f} minuter")
+        searches_per_company = 2  # allabolag + bolagsfakta (+ owner om det finns)
+        print(f"\n⚠️  Detta kommer göra ~{len(companies) * searches_per_company} sökningar på DuckDuckGo")
+        print(f"   Med {RATE_LIMIT_DELAY}s delay = ~{len(companies) * searches_per_company * RATE_LIMIT_DELAY / 60:.0f} minuter")
 
         response = input("\nFortsätta? (y/n): ")
         if response.lower() != 'y':
