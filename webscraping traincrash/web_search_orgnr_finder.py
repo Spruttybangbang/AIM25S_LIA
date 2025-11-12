@@ -49,7 +49,7 @@ except ImportError:
 # KONFIGURATION
 # ============================================================================
 
-DB_PATH = Path(__file__).parent.parent.parent / "databases" / "ai_companies.db"
+DB_PATH = Path(__file__).parent.parent / "databases" / "ai_companies.db"
 RATE_LIMIT_DELAY = 1.5  # Sekunder mellan sökningar
 TIMEOUT = 15
 

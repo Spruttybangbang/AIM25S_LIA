@@ -38,7 +38,7 @@ from bs4 import BeautifulSoup
 # KONFIGURATION
 # ============================================================================
 
-DB_PATH = Path(__file__).parent.parent.parent / "databases" / "ai_companies.db"
+DB_PATH = Path(__file__).parent.parent / "databases" / "ai_companies.db"
 RATE_LIMIT_DELAY = 1.0
 TIMEOUT = 10
 
@@ -200,7 +200,7 @@ def extract_official_company_name(soup: BeautifulSoup, url: str) -> List[str]:
 def scrape_company_website(website: str) -> Dict[str, any]:
     """
     Scrapa företagets webbsajt för att hitta officiellt namn och org.nr
-    
+
     Returns:
         {
             'official_names': [lista med kandidater],
@@ -215,27 +215,45 @@ def scrape_company_website(website: str) -> Dict[str, any]:
         'found_on_page': None,
         'error': None
     }
-    
+
     # Normalisera URL
     if not website:
         result['error'] = "Ingen webbsajt angiven"
         return result
-    
+
     if not website.startswith('http'):
         website = 'https://' + website
-    
+
     # Ta bort trailing slash
     website = website.rstrip('/')
-    
+
+    # Skapa en session för att behålla cookies
+    session = requests.Session()
+
+    # Realistiska headers för att undvika blockering
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Language': 'sv-SE,sv;q=0.9,en-US;q=0.8,en;q=0.7',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'DNT': '1',
+        'Connection': 'keep-alive',
+        'Upgrade-Insecure-Requests': '1',
+        'Sec-Fetch-Dest': 'document',
+        'Sec-Fetch-Mode': 'navigate',
+        'Sec-Fetch-Site': 'none',
+        'Cache-Control': 'max-age=0',
+    }
+
     # Försök olika sidor
     for page_path in PAGES_TO_CHECK:
         url = website + page_path
-        
+
         try:
-            response = requests.get(
-                url, 
+            response = session.get(
+                url,
                 timeout=TIMEOUT,
-                headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'},
+                headers=headers,
                 allow_redirects=True
             )
             
