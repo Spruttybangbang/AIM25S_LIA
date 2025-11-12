@@ -363,8 +363,8 @@ def search_company(
 
     # Sök med varje sökterm (allabolag och bolagsfakta)
     for i, term in enumerate(SEARCH_TERMS, 1):
-        # Använd title: prefix för bättre precision
-        query = f'title:"{name}" {term}'
+        # Enkel sökning utan title: (fungerar bättre med DuckDuckGo)
+        query = f"{name} {term}"
 
         print(f"   [{i}/2] Söker: {query}")
 
