@@ -55,28 +55,42 @@ def extract_orgnr_candidates(text: str) -> List[str]:
     """
     Hitta alla potentiella org.nr i text
 
-    Format:
+    Specialformat som prioriteras:
+    - Allabolag: "Företag AB - Org.nr 556498-5025 - Ort"
+    - Bolagsfakta URL: "bolagsfakta.se/5569631913-Foretagsnamn"
+
+    Standard format:
     - XXXXXX-XXXX (standard)
     - XXXXXXXXXX (10 siffror)
-    - 16XXXXXXXXXX (12 siffror med 16-prefix, juridiska personer)
+    - 16XXXXXXXXXX (12 siffror med 16-prefix)
     """
     if not text:
         return []
 
     candidates = []
 
-    # Pattern 1: XXXXXX-XXXX
+    # PRIORITET 1: Allabolag format "Org.nr XXXXXX-XXXX"
+    allabolag_pattern = r'[Oo]rg\.?\s*[Nn]r\.?\s*[:\-]?\s*(\d{6}-\d{4})'
+    allabolag_matches = re.findall(allabolag_pattern, text)
+    candidates.extend(allabolag_matches)
+
+    # PRIORITET 2: Bolagsfakta URL format "/XXXXXXXXXX-Foretagsnamn"
+    bolagsfakta_pattern = r'bolagsfakta\.se[^\d]*(\d{10})'
+    bolagsfakta_matches = re.findall(bolagsfakta_pattern, text)
+    candidates.extend([f"{m[:6]}-{m[6:]}" for m in bolagsfakta_matches])
+
+    # Pattern 3: Standard XXXXXX-XXXX
     pattern1 = r'\b(\d{6}-\d{4})\b'
     matches1 = re.findall(pattern1, text)
     candidates.extend(matches1)
 
-    # Pattern 2: 10 siffror i rad (men inte datum eller telefonnummer)
-    pattern2 = r'\b(5\d{9})\b'  # Börjar oftast med 5 för aktiebolag
+    # Pattern 4: 10 siffror i rad (börjar med 5 för aktiebolag)
+    pattern2 = r'\b(5\d{9})\b'
     matches2 = re.findall(pattern2, text)
     # Formatera till XXXXXX-XXXX
     candidates.extend([f"{m[:6]}-{m[6:]}" for m in matches2])
 
-    # Pattern 3: 16XXXXXXXXXX (12 siffror)
+    # Pattern 5: 16XXXXXXXXXX (12 siffror)
     pattern3 = r'\b(16\d{10})\b'
     matches3 = re.findall(pattern3, text)
     # Ta bort 16-prefix och formatera
@@ -93,27 +107,53 @@ def extract_orgnr_candidates(text: str) -> List[str]:
     return unique
 
 
+def extract_company_name_from_result(text: str, url: str) -> Optional[str]:
+    """
+    Försök extrahera företagsnamn från sökresultat
+
+    Prioriterar:
+    - Allabolag format: "Företagsnamn AB - Org.nr..."
+    - Bolagsfakta URL: "...5569631913-AIxDesign_Global_AB"
+    """
+    if not text and not url:
+        return None
+
+    # Allabolag titel format: "Decerno Aktiebolag - Org.nr 556498-5025 - Stockholm"
+    allabolag_match = re.search(r'^([^-]+?)\s*-\s*[Oo]rg\.?\s*[Nn]r', text)
+    if allabolag_match:
+        return allabolag_match.group(1).strip()
+
+    # Bolagsfakta URL format: "bolagsfakta.se/5569631913-AIxDesign_Global_AB"
+    bolagsfakta_match = re.search(r'bolagsfakta\.se[^\d]*\d{10}-([^/\s]+)', text + " " + url)
+    if bolagsfakta_match:
+        # Ersätt understreck med mellanslag
+        name = bolagsfakta_match.group(1).replace('_', ' ')
+        return name.strip()
+
+    return None
+
+
 # ============================================================================
 # DUCKDUCKGO SEARCH
 # ============================================================================
 
-def duckduckgo_search(query: str) -> Tuple[str, str]:
+def duckduckgo_search(query: str) -> Tuple[str, str, str]:
     """
-    Sök på DuckDuckGo och returnera första träffens text
+    Sök på DuckDuckGo och returnera träffar
 
     Returns:
-        (url, text)
+        (primary_url, combined_text, all_urls_as_text)
     """
     try:
         with DDGS() as ddgs:
-            # Hämta första 3 resultaten (ger mer kontext)
-            results = list(ddgs.text(query, region='se-sv', max_results=3))
+            # Hämta första 5 resultaten (ökar chansen att hitta rätt)
+            results = list(ddgs.text(query, region='se-sv', max_results=5))
 
             if not results:
-                return "", "[Inga resultat hittades]"
+                return "", "[Inga resultat hittades]", ""
 
-            # Sammanställ text från första 3 resultaten
-            # (ökar chansen att hitta org.nr)
+            # Sammanställ text från alla resultat
+            # Inkludera URL i texten för att kunna matcha bolagsfakta-format
             combined_text = []
             urls = []
 
@@ -122,17 +162,19 @@ def duckduckgo_search(query: str) -> Tuple[str, str]:
                 body = result.get('body', '')
                 url = result.get('href', '')
 
-                combined_text.append(f"{title} {body}")
+                # Inkludera URL i texten för bättre matching
+                combined_text.append(f"{title} {body} {url}")
                 if url and url not in urls:
                     urls.append(url)
 
             text = " ".join(combined_text).strip()
             primary_url = urls[0] if urls else ""
+            all_urls = " | ".join(urls[:3])  # Första 3 URL:erna
 
-            return primary_url, text
+            return primary_url, text, all_urls
 
     except Exception as e:
-        return "", f"[ERROR: {str(e)}]"
+        return "", f"[ERROR: {str(e)}]", ""
 
 
 # ============================================================================
@@ -247,6 +289,7 @@ def search_company(
 
     search_results = {}
     all_orgnr = []
+    all_extracted_names = []
 
     # Sök med varje sökterm
     for i, term in enumerate(SEARCH_TERMS, 1):
@@ -254,12 +297,13 @@ def search_company(
 
         print(f"   [{i}/4] Söker: '{query}'")
 
-        url, text = duckduckgo_search(query)
+        url, text, all_urls = duckduckgo_search(query)
 
         # Spara resultat
         result[f"search_query_{i}"] = query
         result[f"result_url_{i}"] = url
-        result[f"result_text_{i}"] = text[:500]  # Begränsa längd för CSV
+        result[f"all_urls_{i}"] = all_urls[:300]  # Spara flera URLs
+        result[f"result_text_{i}"] = text[:800]  # Öka från 500 till 800 tecken
 
         search_results[term] = text
 
@@ -267,9 +311,19 @@ def search_company(
         orgnr_found = extract_orgnr_candidates(text)
         result[f"found_orgnr_{i}"] = ", ".join(orgnr_found) if orgnr_found else ""
 
+        # Extrahera företagsnamn
+        company_name_found = extract_company_name_from_result(text, url)
+        if company_name_found:
+            result[f"extracted_name_{i}"] = company_name_found
+            all_extracted_names.append(company_name_found)
+
         all_orgnr.extend(orgnr_found)
 
-        print(f"      → Hittade: {len(orgnr_found)} org.nr")
+        print(f"      → Hittade: {len(orgnr_found)} org.nr", end="")
+        if company_name_found:
+            print(f" + namn: {company_name_found[:40]}")
+        else:
+            print()
 
         # Rate limiting
         if i < len(SEARCH_TERMS):
@@ -280,22 +334,38 @@ def search_company(
         query = f"{owner} organisationsnummer"
         print(f"   [5/5] Söker på owner: '{query}'")
 
-        url, text = duckduckgo_search(query)
+        url, text, all_urls = duckduckgo_search(query)
         result["search_query_owner"] = query
         result["result_url_owner"] = url
-        result["result_text_owner"] = text[:500]
+        result["all_urls_owner"] = all_urls[:300]
+        result["result_text_owner"] = text[:800]
 
         orgnr_found = extract_orgnr_candidates(text)
         result["found_orgnr_owner"] = ", ".join(orgnr_found) if orgnr_found else ""
+
+        # Extrahera företagsnamn från owner-sökning
+        company_name_found = extract_company_name_from_result(text, url)
+        if company_name_found:
+            result["extracted_name_owner"] = company_name_found
+            all_extracted_names.append(company_name_found)
+
         all_orgnr.extend(orgnr_found)
 
-        print(f"      → Hittade: {len(orgnr_found)} org.nr")
+        print(f"      → Hittade: {len(orgnr_found)} org.nr", end="")
+        if company_name_found:
+            print(f" + namn: {company_name_found[:40]}")
+        else:
+            print()
 
         time.sleep(RATE_LIMIT_DELAY)
 
     # Sammanställ alla unika org.nr
     unique_orgnr = list(dict.fromkeys(all_orgnr))  # Behåll ordning
     result["all_found_orgnr"] = ", ".join(unique_orgnr)
+
+    # Sammanställ alla extraherade företagsnamn
+    unique_names = list(dict.fromkeys(all_extracted_names))
+    result["all_extracted_names"] = " | ".join(unique_names)
 
     # Gör kvalificerad gissning
     suggested, confidence, reason = suggest_best_orgnr(
@@ -328,22 +398,27 @@ def export_to_csv(results: List[Dict], output_path: Path):
         "company_id", "company_name", "company_type", "owner", "website",
 
         # Sökresultat 1: organisationsnummer
-        "search_query_1", "result_url_1", "result_text_1", "found_orgnr_1",
+        "search_query_1", "result_url_1", "all_urls_1", "result_text_1",
+        "found_orgnr_1", "extracted_name_1",
 
         # Sökresultat 2: juridiskt namn
-        "search_query_2", "result_url_2", "result_text_2", "found_orgnr_2",
+        "search_query_2", "result_url_2", "all_urls_2", "result_text_2",
+        "found_orgnr_2", "extracted_name_2",
 
         # Sökresultat 3: allabolag
-        "search_query_3", "result_url_3", "result_text_3", "found_orgnr_3",
+        "search_query_3", "result_url_3", "all_urls_3", "result_text_3",
+        "found_orgnr_3", "extracted_name_3",
 
         # Sökresultat 4: bolagsfakta
-        "search_query_4", "result_url_4", "result_text_4", "found_orgnr_4",
+        "search_query_4", "result_url_4", "all_urls_4", "result_text_4",
+        "found_orgnr_4", "extracted_name_4",
 
         # Owner-sökning (om tillämpligt)
-        "search_query_owner", "result_url_owner", "result_text_owner", "found_orgnr_owner",
+        "search_query_owner", "result_url_owner", "all_urls_owner", "result_text_owner",
+        "found_orgnr_owner", "extracted_name_owner",
 
         # Sammanställning
-        "all_found_orgnr",
+        "all_found_orgnr", "all_extracted_names",
 
         # Scriptets gissning
         "suggested_orgnr", "confidence_score", "suggestion_reason",
