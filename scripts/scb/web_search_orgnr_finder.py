@@ -149,9 +149,13 @@ def extract_company_name_from_result(text: str, url: str) -> Optional[str]:
 # DUCKDUCKGO SEARCH
 # ============================================================================
 
-def duckduckgo_search(query: str) -> Tuple[str, str, str, str]:
+def duckduckgo_search(query: str, searched_name: str) -> Tuple[str, str, str, str]:
     """
-    Sök på DuckDuckGo och returnera träffar (filtrerar bort annonser)
+    Sök på DuckDuckGo och returnera BÄSTA träffen baserat på namnmatchning
+
+    Args:
+        query: Sökfråga
+        searched_name: Det företagsnamn vi söker efter (för matchning)
 
     Returns:
         (best_result_url, best_result_text, best_company_name, best_orgnr)
@@ -188,29 +192,72 @@ def duckduckgo_search(query: str) -> Tuple[str, str, str, str]:
                 if 'allabolag.se' not in url and 'bolagsfakta.se' not in url:
                     continue
 
+                text = f"{title} {body} {url}"
+
+                # Extrahera företagsnamn
+                company_name = extract_company_name_from_result(text, url)
+
+                # Extrahera org.nr
+                orgnr_list = extract_orgnr_candidates(text)
+                orgnr = orgnr_list[0] if orgnr_list else ""
+
+                # Skippa om vi inte hittar företagsnamn ELLER org.nr
+                if not company_name and not orgnr:
+                    continue
+
                 organic_results.append({
                     'url': url,
-                    'title': title,
-                    'body': body,
-                    'text': f"{title} {body} {url}"
+                    'text': text[:500],
+                    'company_name': company_name or "",
+                    'orgnr': orgnr,
                 })
 
             if not organic_results:
                 return "", "[Inga organiska resultat hittades]", "", ""
 
-            # Använd första organiska resultatet
-            best = organic_results[0]
-            text = best['text']
-            url = best['url']
+            # Hitta BÄSTA matchningen genom namnlikhet
+            searched_normalized = normalize_company_name(searched_name)
+            best_match = None
+            best_similarity = 0
 
-            # Extrahera företagsnamn direkt här
-            company_name = extract_company_name_from_result(text, url)
+            for candidate in organic_results:
+                if not candidate['company_name']:
+                    continue
 
-            # Extrahera org.nr direkt här
-            orgnr_list = extract_orgnr_candidates(text)
-            best_orgnr = orgnr_list[0] if orgnr_list else ""
+                candidate_normalized = normalize_company_name(candidate['company_name'])
+                similarity = fuzz.ratio(searched_normalized, candidate_normalized)
 
-            return url, text[:500], company_name or "", best_orgnr
+                if similarity > best_similarity:
+                    best_similarity = similarity
+                    best_match = candidate
+
+            # Om vi hittade en bra matchning (>60% likhet), använd den
+            if best_match and best_similarity >= 60:
+                return (
+                    best_match['url'],
+                    best_match['text'],
+                    best_match['company_name'],
+                    best_match['orgnr']
+                )
+
+            # Annars: ta första resultatet med org.nr
+            for candidate in organic_results:
+                if candidate['orgnr']:
+                    return (
+                        candidate['url'],
+                        candidate['text'],
+                        candidate['company_name'],
+                        candidate['orgnr']
+                    )
+
+            # Sista utväg: första resultatet
+            first = organic_results[0]
+            return (
+                first['url'],
+                first['text'],
+                first['company_name'],
+                first['orgnr']
+            )
 
     except Exception as e:
         return "", f"[ERROR: {str(e)}]", "", ""
@@ -368,7 +415,7 @@ def search_company(
 
         print(f"   [{i}/2] Söker: {query}")
 
-        url, text, company_name_found, orgnr_found = duckduckgo_search(query)
+        url, text, company_name_found, orgnr_found = duckduckgo_search(query, name)
 
         # Spara resultat i enkel format
         result[f"search_query_{i}"] = query
