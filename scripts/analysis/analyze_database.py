@@ -254,7 +254,7 @@ def generate_recommendations(missing_df, df, table_name):
 
 def main():
     """Main analysis function."""
-    db_path = 'ai_companies.db'
+    db_path = 'databases/ai_companies.db'
 
     print(f"\n{'#'*80}")
     print(f"# DATABAS-GENOMLYSNING: SVENSKA AI-FÖRETAG")
