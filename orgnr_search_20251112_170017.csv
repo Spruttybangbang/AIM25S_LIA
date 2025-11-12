@@ -1,0 +1,119 @@
+﻿company_id,company_name,company_type,owner,website,search_query_1,result_url_1,result_text_1,found_orgnr_1,search_query_2,result_url_2,result_text_2,found_orgnr_2,search_query_3,result_url_3,result_text_3,found_orgnr_3,search_query_4,result_url_4,result_text_4,found_orgnr_4,search_query_owner,result_url_owner,result_text_owner,found_orgnr_owner,all_found_orgnr,suggested_orgnr,confidence_score,suggestion_reason,verified_orgnr,notes
+2015,AI Utbildningscentrum (AIUC),startup,Ampliro AB,https://www.aiuc.se,AI Utbildningscentrum (AIUC) organisationsnummer,,"[ERROR: https://www.bing.com/search RuntimeError: error sending request for url (https://www.bing.com/search?q=AI+Utbildningscentrum+%28AIUC%29+organisationsnummer): client error (Connect)
+
+Caused by:
+    0: client error (Connect)
+    1: TLS handshake failed: cert verification failed - self signed certificate in certificate chain [CERTIFICATE_VERIFY_FAILED]
+    2: [CERTIFICATE_VERIFY_FAILED]
+    3: [CERTIFICATE_VERIFY_FAILED]
+
+Stack backtrace:
+   0: <unknown>
+   1: <unknown>
+   2: <unknown>
+   3",,AI Utbildningscentrum (AIUC) juridiskt namn,,"[ERROR: https://www.bing.com/search RuntimeError: error sending request for url (https://www.bing.com/search?q=AI+Utbildningscentrum+%28AIUC%29+juridiskt+namn): client error (Connect)
+
+Caused by:
+    0: client error (Connect)
+    1: TLS handshake failed: cert verification failed - self signed certificate in certificate chain [CERTIFICATE_VERIFY_FAILED]
+    2: [CERTIFICATE_VERIFY_FAILED]
+    3: [CERTIFICATE_VERIFY_FAILED]
+
+Stack backtrace:
+   0: <unknown>
+   1: <unknown>
+   2: <unknown>
+   3: <un",,AI Utbildningscentrum (AIUC) allabolag,,"[ERROR: https://www.bing.com/search RuntimeError: error sending request for url (https://www.bing.com/search?q=AI+Utbildningscentrum+%28AIUC%29+allabolag): client error (Connect)
+
+Caused by:
+    0: client error (Connect)
+    1: TLS handshake failed: cert verification failed - self signed certificate in certificate chain [CERTIFICATE_VERIFY_FAILED]
+    2: [CERTIFICATE_VERIFY_FAILED]
+    3: [CERTIFICATE_VERIFY_FAILED]
+
+Stack backtrace:
+   0: <unknown>
+   1: <unknown>
+   2: <unknown>
+   3: <unknown",,AI Utbildningscentrum (AIUC) bolagsfakta,,"[ERROR: https://www.bing.com/search RuntimeError: error sending request for url (https://www.bing.com/search?q=AI+Utbildningscentrum+%28AIUC%29+bolagsfakta): client error (Connect)
+
+Caused by:
+    0: client error (Connect)
+    1: TLS handshake failed: cert verification failed - self signed certificate in certificate chain [CERTIFICATE_VERIFY_FAILED]
+    2: [CERTIFICATE_VERIFY_FAILED]
+    3: [CERTIFICATE_VERIFY_FAILED]
+
+Stack backtrace:
+   0: <unknown>
+   1: <unknown>
+   2: <unknown>
+   3: <unkno",,Ampliro AB organisationsnummer,,"[ERROR: https://www.bing.com/search RuntimeError: error sending request for url (https://www.bing.com/search?q=Ampliro+AB+organisationsnummer): client error (Connect)
+
+Caused by:
+    0: client error (Connect)
+    1: TLS handshake failed: cert verification failed - self signed certificate in certificate chain [CERTIFICATE_VERIFY_FAILED]
+    2: [CERTIFICATE_VERIFY_FAILED]
+    3: [CERTIFICATE_VERIFY_FAILED]
+
+Stack backtrace:
+   0: <unknown>
+   1: <unknown>
+   2: <unknown>
+   3: <unknown>
+   4: <unk",,,,0.00,Inga org.nr hittades,,
+2270,AI&I,startup,,http://www.aiandi.biz,AI&I organisationsnummer,,"[ERROR: https://www.bing.com/search RuntimeError: error sending request for url (https://www.bing.com/search?q=AI%26I+organisationsnummer): client error (Connect)
+
+Caused by:
+    0: client error (Connect)
+    1: TLS handshake failed: cert verification failed - self signed certificate in certificate chain [CERTIFICATE_VERIFY_FAILED]
+    2: [CERTIFICATE_VERIFY_FAILED]
+    3: [CERTIFICATE_VERIFY_FAILED]
+
+Stack backtrace:
+   0: <unknown>
+   1: <unknown>
+   2: <unknown>
+   3: <unknown>
+   4: <unknown",,AI&I juridiskt namn,,"[ERROR: https://www.bing.com/search RuntimeError: error sending request for url (https://www.bing.com/search?q=AI%26I+juridiskt+namn): client error (Connect)
+
+Caused by:
+    0: client error (Connect)
+    1: TLS handshake failed: cert verification failed - self signed certificate in certificate chain [CERTIFICATE_VERIFY_FAILED]
+    2: [CERTIFICATE_VERIFY_FAILED]
+    3: [CERTIFICATE_VERIFY_FAILED]
+
+Stack backtrace:
+   0: <unknown>
+   1: <unknown>
+   2: <unknown>
+   3: <unknown>
+   4: <unknown>
+   ",,AI&I allabolag,,"[ERROR: https://www.bing.com/search RuntimeError: error sending request for url (https://www.bing.com/search?q=AI%26I+allabolag): client error (Connect)
+
+Caused by:
+    0: client error (Connect)
+    1: TLS handshake failed: cert verification failed - self signed certificate in certificate chain [CERTIFICATE_VERIFY_FAILED]
+    2: [CERTIFICATE_VERIFY_FAILED]
+    3: [CERTIFICATE_VERIFY_FAILED]
+
+Stack backtrace:
+   0: <unknown>
+   1: <unknown>
+   2: <unknown>
+   3: <unknown>
+   4: <unknown>
+   5: Py",,AI&I bolagsfakta,,"[ERROR: https://www.bing.com/search RuntimeError: error sending request for url (https://www.bing.com/search?q=AI%26I+bolagsfakta): client error (Connect)
+
+Caused by:
+    0: client error (Connect)
+    1: TLS handshake failed: cert verification failed - self signed certificate in certificate chain [CERTIFICATE_VERIFY_FAILED]
+    2: [CERTIFICATE_VERIFY_FAILED]
+    3: [CERTIFICATE_VERIFY_FAILED]
+
+Stack backtrace:
+   0: <unknown>
+   1: <unknown>
+   2: <unknown>
+   3: <unknown>
+   4: <unknown>
+   5: ",,,,,,,,0.00,Inga org.nr hittades,,
