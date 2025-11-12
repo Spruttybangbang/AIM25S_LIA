@@ -149,44 +149,71 @@ def extract_company_name_from_result(text: str, url: str) -> Optional[str]:
 # DUCKDUCKGO SEARCH
 # ============================================================================
 
-def duckduckgo_search(query: str) -> Tuple[str, str, str]:
+def duckduckgo_search(query: str) -> Tuple[str, str, str, str]:
     """
-    Sök på DuckDuckGo och returnera träffar
+    Sök på DuckDuckGo och returnera träffar (filtrerar bort annonser)
 
     Returns:
-        (primary_url, combined_text, all_urls_as_text)
+        (best_result_url, best_result_text, best_company_name, best_orgnr)
     """
     try:
         with DDGS() as ddgs:
-            # Hämta första 2 resultaten (annonser filtreras oftast bort automatiskt)
-            results = list(ddgs.text(query, region='se-sv', max_results=2))
+            # Hämta 10 resultat för att komma förbi annonser
+            results = list(ddgs.text(query, region='se-sv', max_results=10))
 
             if not results:
-                return "", "[Inga resultat hittades]", ""
+                return "", "[Inga resultat hittades]", "", ""
 
-            # Sammanställ text från alla resultat
-            # Inkludera URL i texten för att kunna matcha bolagsfakta-format
-            combined_text = []
-            urls = []
-
+            # Filtrera bort annonser och irrelevanta resultat
+            organic_results = []
             for result in results:
+                url = result.get('href', '')
                 title = result.get('title', '')
                 body = result.get('body', '')
-                url = result.get('href', '')
 
-                # Inkludera URL i texten för bättre matching
-                combined_text.append(f"{title} {body} {url}")
-                if url and url not in urls:
-                    urls.append(url)
+                # Filtrera bort annonser och irrelevanta sajter
+                skip_domains = [
+                    'ad.doubleclick', 'googleads', 'adservice',
+                    'adroll', 'facebook.com/ads', 'linkedin.com/ads',
+                    'allabolag.se/sök-',  # Söksida, inte företag
+                    'allabolag.se/befattning/',  # Personprofiler, inte företag
+                    '/listor',  # Listor
+                    '/bransch/',  # Branschöversikter
+                ]
 
-            text = " ".join(combined_text).strip()
-            primary_url = urls[0] if urls else ""
-            all_urls = " | ".join(urls[:3])  # Första 3 URL:erna
+                if any(domain in url.lower() for domain in skip_domains):
+                    continue
 
-            return primary_url, text, all_urls
+                # Måste vara från allabolag eller bolagsfakta
+                if 'allabolag.se' not in url and 'bolagsfakta.se' not in url:
+                    continue
+
+                organic_results.append({
+                    'url': url,
+                    'title': title,
+                    'body': body,
+                    'text': f"{title} {body} {url}"
+                })
+
+            if not organic_results:
+                return "", "[Inga organiska resultat hittades]", "", ""
+
+            # Använd första organiska resultatet
+            best = organic_results[0]
+            text = best['text']
+            url = best['url']
+
+            # Extrahera företagsnamn direkt här
+            company_name = extract_company_name_from_result(text, url)
+
+            # Extrahera org.nr direkt här
+            orgnr_list = extract_orgnr_candidates(text)
+            best_orgnr = orgnr_list[0] if orgnr_list else ""
+
+            return url, text[:500], company_name or "", best_orgnr
 
     except Exception as e:
-        return "", f"[ERROR: {str(e)}]", ""
+        return "", f"[ERROR: {str(e)}]", "", ""
 
 
 # ============================================================================
@@ -332,108 +359,32 @@ def search_company(
         "website": website or "",
     }
 
-    search_results = {}
-    all_orgnr = []
-    all_extracted_names = []
     orgnr_name_pairs = []  # Lista av (org.nr, namn) par för matchning
 
-    # Sök med varje sökterm
+    # Sök med varje sökterm (allabolag och bolagsfakta)
     for i, term in enumerate(SEARCH_TERMS, 1):
-        query = f"{name} {term}"
+        # Använd title: prefix för bättre precision
+        query = f'title:"{name}" {term}'
 
-        print(f"   [{i}/2] Söker: '{query}'")
+        print(f"   [{i}/2] Söker: {query}")
 
-        url, text, all_urls = duckduckgo_search(query)
+        url, text, company_name_found, orgnr_found = duckduckgo_search(query)
 
-        # Spara resultat
+        # Spara resultat i enkel format
         result[f"search_query_{i}"] = query
-        result[f"result_url_{i}"] = url
-        result[f"all_urls_{i}"] = all_urls[:300]  # Spara flera URLs
-        result[f"result_text_{i}"] = text[:800]
+        result[f"best_match_{i}"] = company_name_found
+        result[f"found_orgnr_{i}"] = orgnr_found
 
-        search_results[term] = text
-
-        # Extrahera org.nr
-        orgnr_found = extract_orgnr_candidates(text)
-        result[f"found_orgnr_{i}"] = ", ".join(orgnr_found) if orgnr_found else ""
-
-        # Extrahera företagsnamn
-        company_name_found = extract_company_name_from_result(text, url)
-        if company_name_found:
-            result[f"extracted_name_{i}"] = company_name_found
-            all_extracted_names.append(company_name_found)
-
-        all_orgnr.extend(orgnr_found)
-
-        # Koppla ihop org.nr med namn
-        # Om vi hittade både org.nr och namn, para ihop dem
+        # Koppla ihop org.nr med namn för matchning
         if orgnr_found and company_name_found:
-            # Första org.nr hör troligen till det extraherade namnet
-            orgnr_name_pairs.append((orgnr_found[0], company_name_found))
-            # Lägg till resten utan namn
-            for extra_orgnr in orgnr_found[1:]:
-                orgnr_name_pairs.append((extra_orgnr, ""))
-        elif orgnr_found:
-            # Org.nr utan namn
-            for orgnr in orgnr_found:
-                orgnr_name_pairs.append((orgnr, ""))
+            orgnr_name_pairs.append((orgnr_found, company_name_found))
 
-        print(f"      → Hittade: {len(orgnr_found)} org.nr", end="")
-        if company_name_found:
-            print(f" + namn: {company_name_found[:40]}")
-        else:
-            print()
+        print(f"      → Namn: {company_name_found or '(inget)'}")
+        print(f"      → Org.nr: {orgnr_found or '(inget)'}")
 
         # Rate limiting
         if i < len(SEARCH_TERMS):
             time.sleep(RATE_LIMIT_DELAY)
-
-    # Om vi har owner, sök på det också
-    if owner and owner.strip():
-        query = f"{owner} site:allabolag.se"
-        print(f"   [3/3] Söker på owner: '{query}'")
-
-        url, text, all_urls = duckduckgo_search(query)
-        result["search_query_owner"] = query
-        result["result_url_owner"] = url
-        result["all_urls_owner"] = all_urls[:300]
-        result["result_text_owner"] = text[:800]
-
-        orgnr_found = extract_orgnr_candidates(text)
-        result["found_orgnr_owner"] = ", ".join(orgnr_found) if orgnr_found else ""
-
-        # Extrahera företagsnamn från owner-sökning
-        company_name_found = extract_company_name_from_result(text, url)
-        if company_name_found:
-            result["extracted_name_owner"] = company_name_found
-            all_extracted_names.append(company_name_found)
-
-        all_orgnr.extend(orgnr_found)
-
-        # Koppla ihop org.nr med namn för owner
-        if orgnr_found and company_name_found:
-            orgnr_name_pairs.append((orgnr_found[0], company_name_found))
-            for extra_orgnr in orgnr_found[1:]:
-                orgnr_name_pairs.append((extra_orgnr, ""))
-        elif orgnr_found:
-            for orgnr in orgnr_found:
-                orgnr_name_pairs.append((orgnr, ""))
-
-        print(f"      → Hittade: {len(orgnr_found)} org.nr", end="")
-        if company_name_found:
-            print(f" + namn: {company_name_found[:40]}")
-        else:
-            print()
-
-        time.sleep(RATE_LIMIT_DELAY)
-
-    # Sammanställ alla unika org.nr
-    unique_orgnr = list(dict.fromkeys(all_orgnr))  # Behåll ordning
-    result["all_found_orgnr"] = ", ".join(unique_orgnr)
-
-    # Sammanställ alla extraherade företagsnamn
-    unique_names = list(dict.fromkeys(all_extracted_names))
-    result["all_extracted_names"] = " | ".join(unique_names)
 
     # Gör kvalificerad gissning baserat på namnmatchning
     suggested, confidence, reason = suggest_best_orgnr(
@@ -446,9 +397,8 @@ def search_company(
     result["verified_orgnr"] = ""  # Tom för manuell input
     result["notes"] = ""  # Tom för anteckningar
 
-    print(f"   ✅ Resultat: {len(unique_orgnr)} unika org.nr hittades")
-    if suggested:
-        print(f"   💡 Förslag: {suggested} (confidence: {confidence:.0%})")
+    print(f"   ✅ Förslag: {suggested or '(inget)'} (confidence: {confidence:.0%})")
+    if reason:
         print(f"      Anledning: {reason}")
 
     return result
@@ -460,31 +410,30 @@ def export_to_csv(results: List[Dict], output_path: Path):
         print("⚠️  Inga resultat att exportera")
         return
 
-    # Definiera kolumnordning
+    # Definiera kolumnordning (förenklad struktur)
     fieldnames = [
         # Företagsinfo
-        "company_id", "company_name", "company_type", "owner", "website",
+        "company_id",
+        "company_name",
 
         # Sökresultat 1: allabolag
-        "search_query_1", "result_url_1", "all_urls_1", "result_text_1",
-        "found_orgnr_1", "extracted_name_1",
+        "search_query_1",
+        "best_match_1",
+        "found_orgnr_1",
 
         # Sökresultat 2: bolagsfakta
-        "search_query_2", "result_url_2", "all_urls_2", "result_text_2",
-        "found_orgnr_2", "extracted_name_2",
+        "search_query_2",
+        "best_match_2",
+        "found_orgnr_2",
 
-        # Owner-sökning (om tillämpligt)
-        "search_query_owner", "result_url_owner", "all_urls_owner", "result_text_owner",
-        "found_orgnr_owner", "extracted_name_owner",
-
-        # Sammanställning
-        "all_found_orgnr", "all_extracted_names",
-
-        # Scriptets gissning (nu med namnmatchning!)
-        "suggested_orgnr", "confidence_score", "suggestion_reason",
+        # Scriptets gissning
+        "suggested_orgnr",
+        "confidence_score",
+        "suggestion_reason",
 
         # Manuell verifiering
-        "verified_orgnr", "notes"
+        "verified_orgnr",
+        "notes"
     ]
 
     with open(output_path, 'w', newline='', encoding='utf-8-sig') as f:
