@@ -46,3 +46,7 @@ scb_bulk*
 
 # Database backups
 *_backup_*.db
+
+# CSV exports
+companies_*.csv
+*.csv
