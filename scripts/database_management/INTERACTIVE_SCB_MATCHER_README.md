@@ -75,7 +75,7 @@ Sökresultat för: Spotify AB
 
 ======================================================================
 Välj alternativ:
-  [1-10] - Välj en kandidat
+  [1-5] - Välj en kandidat
   [s] - Skip (ingen stämmer, gå vidare)
   [n] - Ny sökning (ange egen sökterm)
   [q] - Quit (spara och avbryt)
@@ -84,9 +84,11 @@ Välj alternativ:
 Ditt val: _
 ```
 
+**OBS:** Scriptet visar max 5 kandidater (de bästa matcherna) för att hålla det enkelt och snabbt. Om du får många träffar (>100), rekommenderas att göra en ny sökning med mer specifikt namn.
+
 ### 4. Alternativ
 
-**Välj en kandidat (1-10):**
+**Välj en kandidat (1-5):**
 ```
 Ditt val: 1
 
