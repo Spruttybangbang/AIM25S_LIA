@@ -104,14 +104,33 @@ def search_scb(search_term: str) -> List[Dict]:
         response.raise_for_status()
         results = response.json()
 
-        # Extra säkerhetscheck: ta max 5 även om SCB returnerar fler
-        if len(results) > 5:
-            print(f"  ⚠️  SCB returnerade {len(results)} resultat trots MaxRowLimit, tar första 5")
-            results = results[:5]
+        # Validera att results är en lista
+        if not isinstance(results, list):
+            print(f"  ⚠️  SCB returnerade oväntat format: {type(results)}")
+            return []
 
-        return results
+        # Validera att varje item är ett dictionary
+        valid_results = []
+        for item in results:
+            if isinstance(item, dict):
+                valid_results.append(item)
+            else:
+                print(f"  ⚠️  Ogiltigt resultat-format, hoppar över: {type(item)}")
+
+        # Extra säkerhetscheck: ta max 5 även om SCB returnerar fler
+        if len(valid_results) > 5:
+            print(f"  ⚠️  SCB returnerade {len(valid_results)} resultat trots MaxRowLimit, tar första 5")
+            valid_results = valid_results[:5]
+
+        return valid_results
+    except requests.exceptions.RequestException as e:
+        print(f"  ❌ Nätverksfel: {e}")
+        return []
+    except ValueError as e:
+        print(f"  ❌ JSON-parsningsfel: {e}")
+        return []
     except Exception as e:
-        print(f"  ❌ API-fel: {e}")
+        print(f"  ❌ Oväntat fel: {e}")
         return []
 
 def normalize_name(name: str) -> str:
@@ -250,10 +269,11 @@ def flatten_scb_result(scb_company: Dict) -> Dict:
         'export_import': scb_company.get('Export/Importmarkering', ''),
     }
 
-def save_matches_to_csv(matches: List[Dict], output_path: str):
+def save_matches_to_csv(matches: List[Dict], output_path: str, silent: bool = False):
     """Spara bekräftade matcher till CSV"""
     if not matches:
-        print("⚠️  Inga matcher att spara")
+        if not silent:
+            print("⚠️  Inga matcher att spara")
         return
 
     # Kombinera alla möjliga kolumner från både company och SCB
@@ -308,7 +328,8 @@ def save_matches_to_csv(matches: List[Dict], output_path: str):
         writer.writeheader()
         writer.writerows(matches)
 
-    print(f"\n✅ Sparade {len(matches)} matcher till: {output_path}")
+    if not silent:
+        print(f"\n✅ Sparade {len(matches)} matcher till: {output_path}")
 
 # =============================================================================
 # INTERAKTIV MATCHNING
@@ -372,7 +393,7 @@ def get_user_choice(num_candidates: int) -> Tuple[str, Optional[int]]:
         else:
             print("❌ Ogiltigt val. Försök igen.")
 
-def process_company(company: Dict, confirmed_matches: List[Dict]) -> bool:
+def process_company(company: Dict, confirmed_matches: List[Dict], output_path: str) -> bool:
     """
     Processa ett företag interaktivt
 
@@ -389,7 +410,13 @@ def process_company(company: Dict, confirmed_matches: List[Dict]) -> bool:
     while True:
         # Sök i SCB
         print(f"\n🔍 Söker i SCB efter: '{current_search_term}'...")
-        scb_results = search_scb(current_search_term)
+
+        try:
+            scb_results = search_scb(current_search_term)
+        except Exception as e:
+            print(f"\n❌ Kritiskt fel vid SCB-sökning: {e}")
+            print("Skippar detta företag och fortsätter...")
+            return True
 
         if not scb_results:
             print("\n❌ Inga resultat från SCB")
@@ -416,8 +443,13 @@ def process_company(company: Dict, confirmed_matches: List[Dict]) -> bool:
             else:
                 continue
 
-        # Ranka kandidater
-        candidates = rank_candidates(current_search_term, scb_results)
+        # Ranka kandidater (med try/except för säkerhets skull)
+        try:
+            candidates = rank_candidates(current_search_term, scb_results)
+        except Exception as e:
+            print(f"\n❌ Fel vid rankning av kandidater: {e}")
+            print("Skippar detta företag och fortsätter...")
+            return True
 
         # Visa kandidater
         display_candidates(candidates, current_search_term)
@@ -447,6 +479,14 @@ def process_company(company: Dict, confirmed_matches: List[Dict]) -> bool:
 
             confirmed_matches.append(match)
             print(f"\n✅ Match sparad: {scb_company.get('Företagsnamn')} (Totalt: {len(confirmed_matches)} bekräftade)")
+
+            # AUTO-SAVE efter varje match för att inte förlora data!
+            try:
+                save_matches_to_csv(confirmed_matches, output_path, silent=True)
+                print(f"💾 Auto-saved till {output_path}")
+            except Exception as e:
+                print(f"⚠️  Kunde inte auto-spara: {e}")
+
             return True  # Gå vidare till nästa företag
 
         elif action == 'skip':
@@ -514,6 +554,14 @@ Output:
 
     print(f"✅ Hittade {len(company_ids)} företag att processa")
 
+    # Skapa output-fil direkt (för auto-save funktionalitet)
+    from datetime import datetime
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    output_path = f"scb_matches_confirmed_{timestamp}.csv"
+
+    print(f"\n💾 Data kommer sparas till: {output_path}")
+    print("   (Auto-sparas efter varje match för att aldrig förlora data!)")
+
     # Bekräfta start
     response = input(f"\nVill du börja matcha {len(company_ids)} företag? (y/n): ").strip().lower()
     if response != 'y':
@@ -536,8 +584,13 @@ Output:
             print(f"⚠️  Företag med ID {company_id} hittades inte i databasen")
             continue
 
-        # Processa företaget
-        should_continue = process_company(company, confirmed_matches)
+        # Processa företaget (nu med output_path för auto-save)
+        try:
+            should_continue = process_company(company, confirmed_matches, output_path)
+        except Exception as e:
+            print(f"\n❌ Kritiskt fel vid processning av företag {company_id}: {e}")
+            print("Skippar och fortsätter med nästa företag...")
+            continue
 
         if not should_continue:
             # Användaren valde quit
@@ -547,11 +600,8 @@ Output:
         if i < len(company_ids):
             time.sleep(0.5)
 
-    # Spara resultat
+    # Final save (även om det redan är auto-sparat)
     if confirmed_matches:
-        from datetime import datetime
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        output_path = f"scb_matches_confirmed_{timestamp}.csv"
         save_matches_to_csv(confirmed_matches, output_path)
 
         print(f"\n{'='*70}")
