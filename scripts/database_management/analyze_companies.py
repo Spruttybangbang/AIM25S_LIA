@@ -4,20 +4,63 @@ Analysera specifika företag från PRAKTIKJAKT-databasen
 Används för att testa om specifika IDs eller kategorie av företag
 """
 
+import configparser
+import json
 import requests
 import sqlite3
+import sys
 import time
-import json
-from fuzzywuzzy import fuzz
-from typing import List, Dict, Tuple
+from pathlib import Path
+from typing import List, Dict, Tuple, Optional, Union
+
+try:
+    from fuzzywuzzy import fuzz
+except ImportError as e:
+    raise SystemExit("Saknar 'fuzzywuzzy'. Installera: pip install fuzzywuzzy python-Levenshtein") from e
 
 # =============================================================================
 # KONFIGURATION
 # =============================================================================
 
 API_URL = 'https://privateapi.scb.se/nv0101/v1/sokpavar/api/je/HamtaForetag'
-CERT_PATH = 'certifikat/Certifikat_SokPaVar_A00592_2025-10-29_09-27-36Z.pem'
-DB_PATH = 'ai_companies.db'
+
+def load_config():
+    """Load configuration from config.ini or use defaults"""
+    config = configparser.ConfigParser()
+    config_path = Path(__file__).parent.parent / "config.ini"
+
+    # Defaults (relativa paths från scripts/database_management/)
+    default_db = "../../databases/ai_companies.db"
+    default_cert = "../../SCB/certifikat/Certifikat_SokPaVar_A00592_2025-10-29_09-27-36Z.pem"
+
+    if config_path.exists():
+        config.read(config_path)
+        db_path = config.get('SCB', 'database_path', fallback=default_db)
+        cert_path = config.get('SCB', 'cert_path', fallback=default_cert)
+    else:
+        db_path = default_db
+        cert_path = default_cert
+
+    # Konvertera till absoluta paths
+    script_dir = Path(__file__).parent
+    db_path = (script_dir / db_path).resolve()
+    cert_path = (script_dir / cert_path).resolve()
+
+    return str(db_path), str(cert_path)
+
+def validate_paths(db_path: str, cert_path: str):
+    """Validera att databas och certifikat finns"""
+    db = Path(db_path)
+    cert = Path(cert_path)
+
+    if not db.exists():
+        raise FileNotFoundError(f"Databas hittades inte: {db}")
+
+    if not cert.exists():
+        raise FileNotFoundError(f"Certifikat hittades inte: {cert}")
+
+# Ladda konfiguration
+DB_PATH, CERT_PATH = load_config()
 
 # =============================================================================
 # SCB API-FUNKTIONER
@@ -302,8 +345,20 @@ def analyze_batch(companies: List[Tuple], rate_limit: float = 0.5):
 # =============================================================================
 
 def main():
-    import sys
-    
+    # Validera paths före användning
+    try:
+        validate_paths(DB_PATH, CERT_PATH)
+    except FileNotFoundError as e:
+        print(f"❌ Fel: {e}")
+        print(f"\nFörväntade paths:")
+        print(f"  Databas: {DB_PATH}")
+        print(f"  Certifikat: {CERT_PATH}")
+        print(f"\n💡 Tips:")
+        print(f"  - Databasen ska finnas i databases/ai_companies.db")
+        print(f"  - Certifikatet ska finnas i SCB/certifikat/ (lokalt)")
+        print(f"  - Du kan också skapa scripts/config.ini för custom paths")
+        sys.exit(1)
+
     if len(sys.argv) < 2:
         print("""
 Användning:
