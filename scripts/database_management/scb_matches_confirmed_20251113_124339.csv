@@ -1,5 +1,0 @@
-﻿company_id,company_name,company_type,company_website,company_location_city,company_owner,fuzzy_score,scb_företagsnamn,scb_orgnr,scb_postort,scb_kommun,scb_län,scb_adress,scb_postnr,scb_telefon,scb_sni_kod,scb_sni_text,scb_juridisk_form,scb_antal_anställda,scb_omsättning
-1122,Skatteverket,publicsector,skatteverket.se,MALMÖ,,100,SKATTEVERKET,2021005448,MALMÖ,,,,205 30,0771567567,,,,,
-1130,RISE,publicsector,https://www.ri.se/sv,,,90,RISE Research Institutes of Sweden AB,5564646874,BORÅS,,,,501 15,0105165000,,,,,
-1133,Skogsstyrelsen,publicsector,https://skogsstyrelsen.se,JÖNKÖPING,,100,SKOGSSTYRELSEN,2021005612,JÖNKÖPING,,,,551 83,036359300,,,,,
-1138,Codon,supplier,https://codon.se/,STOCKHOLM,,48,Codon Consulting AB,5592103666,STOCKHOLM,,,,116 25,0709395652,,,,,
