@@ -79,10 +79,16 @@ DB_PATH, CERT_PATH = load_config()
 # =============================================================================
 
 def search_scb(search_term: str) -> List[Dict]:
-    """Sök företag i SCB"""
+    """
+    Sök företag i SCB med begränsning till max 5 resultat
+
+    VIKTIGT: SCB API har en 2000-radgräns. Vi begränsar till 5 träffar
+    för att inte överbelasta API:et och hålla sökningarna snabba.
+    """
     payload = {
         "Företagsstatus": "1",
         "Registreringsstatus": "1",
+        "MaxRowLimit": 5,  # Begränsa till max 5 resultat från SCB
         "variabler": [
             {
                 "Varde1": search_term,
@@ -97,6 +103,12 @@ def search_scb(search_term: str) -> List[Dict]:
         response = requests.post(API_URL, json=payload, cert=CERT_PATH, timeout=30)
         response.raise_for_status()
         results = response.json()
+
+        # Extra säkerhetscheck: ta max 5 även om SCB returnerar fler
+        if len(results) > 5:
+            print(f"  ⚠️  SCB returnerade {len(results)} resultat trots MaxRowLimit, tar första 5")
+            results = results[:5]
+
         return results
     except Exception as e:
         print(f"  ❌ API-fel: {e}")
@@ -200,41 +212,42 @@ def read_company_ids(csv_path: str) -> List[int]:
 def flatten_scb_result(scb_company: Dict) -> Dict:
     """
     Platta ut SCB-resultat till separata kolumner (samma som scb_enrichment-tabellen)
+    Använder faktiska SCB API-nycklar från response
     """
     return {
         'organization_number': scb_company.get('OrgNr', ''),
         'scb_company_name': scb_company.get('Företagsnamn', ''),
-        'co_address': scb_company.get('CoAdress', ''),
-        'post_address': scb_company.get('PostAdress', '') or scb_company.get('Adress', ''),
+        'co_address': scb_company.get('COAdress', ''),
+        'post_address': scb_company.get('PostAdress', ''),
         'post_code': scb_company.get('PostNr', ''),
         'post_city': scb_company.get('PostOrt', ''),
-        'municipality_code': scb_company.get('KommunKod', ''),
-        'municipality': scb_company.get('Kommun', ''),
-        'county_code': scb_company.get('LänsKod', '') or scb_company.get('LanskKod', ''),
-        'county': scb_company.get('Län', '') or scb_company.get('Lans', ''),
-        'num_workplaces': scb_company.get('AntalArbetsställen', '') or scb_company.get('AntalArbetstallen', ''),
-        'employee_size_code': scb_company.get('StorleksklassKod', ''),
+        'municipality_code': scb_company.get('Säteskommun, kod', ''),
+        'municipality': scb_company.get('Säteskommun', ''),
+        'county_code': scb_company.get('Säteslän, kod', ''),
+        'county': scb_company.get('Säteslän', ''),
+        'num_workplaces': scb_company.get('Antal arbetsställen', ''),
+        'employee_size_code': scb_company.get('Stkl, kod', ''),
         'employee_size': scb_company.get('Storleksklass', ''),
-        'company_status_code': scb_company.get('FöretagsstatusKod', '') or scb_company.get('ForetagsstatusKod', ''),
-        'company_status': scb_company.get('Företagsstatus', '') or scb_company.get('Foretagsstatus', ''),
-        'legal_form_code': scb_company.get('JuridiskFormKod', ''),
-        'legal_form': scb_company.get('JuridiskForm', ''),
-        'start_date': scb_company.get('StartDatum', ''),
-        'registration_date': scb_company.get('RegistreringsDatum', ''),
-        'industry_1_code': scb_company.get('SNI2007Kod', ''),
-        'industry_1': scb_company.get('SNI2007Text', ''),
-        'industry_2_code': scb_company.get('SNI2007Kod2', ''),
-        'industry_2': scb_company.get('SNI2007Text2', ''),
-        'revenue_year': scb_company.get('OmsättningÅr', '') or scb_company.get('OmsattningAr', ''),
-        'revenue_size_code': scb_company.get('OmsättningsklassKod', '') or scb_company.get('OmsattningsklassKod', ''),
-        'revenue_size': scb_company.get('Omsättningsklass', '') or scb_company.get('Omsattningsklass', ''),
+        'company_status_code': scb_company.get('Företagsstatus, kod', ''),
+        'company_status': scb_company.get('Företagsstatus', ''),
+        'legal_form_code': scb_company.get('Juridisk form, kod', ''),
+        'legal_form': scb_company.get('Juridisk form', ''),
+        'start_date': scb_company.get('Startdatum', ''),
+        'registration_date': scb_company.get('Registreringsdatum', ''),
+        'industry_1_code': scb_company.get('Bransch_1, kod', ''),
+        'industry_1': scb_company.get('Bransch_1', ''),
+        'industry_2_code': scb_company.get('Bransch_2, kod', ''),
+        'industry_2': scb_company.get('Bransch_2', ''),
+        'revenue_year': scb_company.get('Omsättning, år', ''),
+        'revenue_size_code': scb_company.get('Stkl, oms, kod', ''),
+        'revenue_size': scb_company.get('Storleksklass, oms', ''),
         'phone': scb_company.get('Telefon', ''),
-        'email': scb_company.get('Epost', '') or scb_company.get('Email', ''),
-        'employer_status_code': scb_company.get('ArbetsgivarstatusKod', ''),
+        'email': scb_company.get('E-post', ''),
+        'employer_status_code': scb_company.get('Arbetsgivarstatus, kod', ''),
         'employer_status': scb_company.get('Arbetsgivarstatus', ''),
-        'vat_status_code': scb_company.get('MomsstatusKod', ''),
+        'vat_status_code': scb_company.get('Momsstatus, kod', ''),
         'vat_status': scb_company.get('Momsstatus', ''),
-        'export_import': scb_company.get('ExportImport', ''),
+        'export_import': scb_company.get('Export/Importmarkering', ''),
     }
 
 def save_matches_to_csv(matches: List[Dict], output_path: str):
@@ -302,7 +315,7 @@ def save_matches_to_csv(matches: List[Dict], output_path: str):
 # =============================================================================
 
 def display_candidates(candidates: List[Tuple[Dict, int]], our_name: str):
-    """Visa kandidater för användaren"""
+    """Visa alla kandidater (max 5 från SCB API)"""
     print(f"\n{'='*70}")
     print(f"Sökresultat för: {our_name}")
     print('='*70)
@@ -311,8 +324,8 @@ def display_candidates(candidates: List[Tuple[Dict, int]], our_name: str):
         print("❌ Inga resultat hittades")
         return
 
-    # Visa top 10
-    for i, (company, score) in enumerate(candidates[:10], 1):
+    # Visa alla kandidater (max 5)
+    for i, (company, score) in enumerate(candidates, 1):
         name = company.get('Företagsnamn', '')
         city = company.get('PostOrt', '')
         orgnr = company.get('OrgNr', '')
@@ -322,9 +335,6 @@ def display_candidates(candidates: List[Tuple[Dict, int]], our_name: str):
         print(f"    Org.nr: {orgnr}")
         print(f"    Score: {score}/100")
 
-    if len(candidates) > 10:
-        print(f"\n... och {len(candidates) - 10} fler träffar")
-
 def get_user_choice(num_candidates: int) -> Tuple[str, Optional[int]]:
     """
     Få användarens val
@@ -332,11 +342,13 @@ def get_user_choice(num_candidates: int) -> Tuple[str, Optional[int]]:
     Returns:
         (action, choice_number)
         action: 'select', 'skip', 'new_search', 'quit'
-        choice_number: 1-N om action='select', annars None
+        choice_number: 1-5 om action='select', annars None
     """
+    max_choices = min(num_candidates, 5)  # Max 5 val
+
     print(f"\n{'='*70}")
     print("Välj alternativ:")
-    print(f"  [1-{min(num_candidates, 10)}] - Välj en kandidat")
+    print(f"  [1-{max_choices}] - Välj en kandidat")
     print("  [s] - Skip (ingen stämmer, gå vidare)")
     print("  [n] - Ny sökning (ange egen sökterm)")
     print("  [q] - Quit (spara och avbryt)")
@@ -353,10 +365,10 @@ def get_user_choice(num_candidates: int) -> Tuple[str, Optional[int]]:
             return ('quit', None)
         elif choice.isdigit():
             num = int(choice)
-            if 1 <= num <= min(num_candidates, 10):
+            if 1 <= num <= max_choices:
                 return ('select', num)
             else:
-                print(f"❌ Ogiltigt val. Välj 1-{min(num_candidates, 10)}")
+                print(f"❌ Ogiltigt val. Välj 1-{max_choices}")
         else:
             print("❌ Ogiltigt val. Försök igen.")
 
