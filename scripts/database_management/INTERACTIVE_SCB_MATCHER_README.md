@@ -90,10 +90,7 @@ Ditt val: _
 ```
 Ditt val: 1
 
-✅ Du valde: Spotify AB
-Bekräfta? (y/n): y
-
-✅ Match sparad! (Totalt: 1 bekräftade)
+✅ Match sparad: Spotify AB (Totalt: 1 bekräftade)
 ```
 
 **Skip (ingen stämmer):**
@@ -135,28 +132,48 @@ Scriptet sparar bekräftade matcher i en CSV med följande kolumner:
 ### Matchningsinformation:
 - `fuzzy_score` - Hur bra matchningen är (0-100)
 
-### SCB-data (alla i separata kolumner):
-- `scb_företagsnamn`
-- `scb_orgnr`
-- `scb_postort`
-- `scb_kommun`
-- `scb_län`
-- `scb_adress`
-- `scb_postnr`
-- `scb_telefon`
-- `scb_sni_kod`
-- `scb_sni_text`
-- `scb_juridisk_form`
-- `scb_antal_anställda`
-- `scb_omsättning`
+### SCB-data (alla i separata kolumner - samma som scb_enrichment-tabellen):
+- `organization_number` - Organisationsnummer
+- `scb_company_name` - Officiellt företagsnamn från SCB
+- `co_address` - C/o-adress
+- `post_address` - Postadress
+- `post_code` - Postnummer
+- `post_city` - Postort
+- `municipality_code` - Kommunkod
+- `municipality` - Kommun
+- `county_code` - Länskod
+- `county` - Län
+- `num_workplaces` - Antal arbetsställen
+- `employee_size_code` - Storleksklasskkod (anställda)
+- `employee_size` - Storleksklass (anställda)
+- `company_status_code` - Företagsstatuskod
+- `company_status` - Företagsstatus
+- `legal_form_code` - Juridisk formkod
+- `legal_form` - Juridisk form
+- `start_date` - Startdatum
+- `registration_date` - Registreringsdatum
+- `industry_1_code` - SNI-kod 1
+- `industry_1` - SNI-text 1
+- `industry_2_code` - SNI-kod 2
+- `industry_2` - SNI-text 2
+- `revenue_year` - Omsättningsår
+- `revenue_size_code` - Omsättningsklasskkod
+- `revenue_size` - Omsättningsklass
+- `phone` - Telefon
+- `email` - E-post
+- `employer_status_code` - Arbetsgivarstatuskod
+- `employer_status` - Arbetsgivarstatus
+- `vat_status_code` - Momsstatuskod
+- `vat_status` - Momsstatus
+- `export_import` - Export/Import (J/N)
 
 ## Exempel på output
 
 **scb_matches_confirmed_20251113_010000.csv:**
 ```csv
-company_id,company_name,fuzzy_score,scb_företagsnamn,scb_orgnr,scb_postort,scb_kommun,...
-123,Spotify AB,100,Spotify AB,556703-7495,Stockholm,Stockholm,Drottninggatan 1,...
-456,Klarna AB,95,Klarna Bank AB,556737-0431,Stockholm,Stockholm,Sveavägen 46,...
+company_id,company_name,fuzzy_score,organization_number,scb_company_name,post_city,municipality,employee_size,industry_1,...
+123,Spotify AB,100,556703-7495,Spotify AB,STOCKHOLM,Stockholm,1000-1499 anställda,62010 Dataprogrammering,...
+456,Klarna AB,95,556737-0431,Klarna Bank AB,STOCKHOLM,Stockholm,500-999 anställda,64190 Banker,...
 ```
 
 ## Tips
