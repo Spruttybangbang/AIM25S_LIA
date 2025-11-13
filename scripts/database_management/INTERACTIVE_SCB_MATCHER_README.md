@@ -13,6 +13,16 @@ Ett interaktivt script för att matcha företag från din databas mot SCB:s för
 - Möjlighet att söka med egen term om ingen stämmer
 - Spara och avbryt när som helst
 
+✅ **AUTO-SAVE funktionalitet** 💾
+- Sparar automatiskt efter VARJE bekräftad match
+- Data går aldrig förlorad vid crash eller avbrott
+- CSV uppdateras kontinuerligt
+
+✅ **Robust felhantering**
+- Hanterar oväntade API-responses graciöst
+- Skippar problematiska företag istället för att krascha
+- Fortsätter arbeta även vid nätverksfel
+
 ✅ **Exporterar komplett SCB-data**
 - Alla SCB-variabler i separata kolumner (inte JSON-klump)
 - Innehåller org.nr, adress, SNI-kod, antal anställda, etc.
@@ -187,11 +197,18 @@ Scriptet begränsar till max 5 resultat från SCB. Om rätt företag inte finns 
 - Lägg till stad: `Företagsnamn Stockholm`
 - Lägg till org.nr om känt: `Företagsnamn 556123-4567`
 
+### Data-säkerhet 💾
+- **Auto-save:** Varje match sparas OMEDELBART till CSV
+- **Ingen data-förlust:** Vid crash finns alla tidigare matchningar i CSV:n
+- **Säkert avbrott:** Tryck Ctrl+C eller [q] - data är redan sparad!
+- **Kontinuerlig uppdatering:** CSV:n uppdateras efter varje match
+
 ### Best practices
 1. Börja med ett litet test (5-10 företag)
 2. Använd "s" (skip) för företag du är osäker på
 3. Använd "q" (quit) för att spara progress och ta paus
 4. Granska output-CSV:n innan du importerar till databasen
+5. Vid crash: CSV:n innehåller alla tidigare matchningar!
 
 ## Felsökning
 
