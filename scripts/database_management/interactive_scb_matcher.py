@@ -43,7 +43,7 @@ def load_config():
 
     # Defaults (relativa paths från scripts/database_management/)
     default_db = "../../databases/ai_companies.db"
-    default_cert = "../../SCB/certifikat/Certifikat_SokPaVar_A00592_2025-10-29_09-27-36Z.pem"
+    default_cert = "../../../SCB/certifikat/Certifikat_SokPaVar_A00592_2025-10-29_09-27-36Z.pem"
 
     if config_path.exists():
         config.read(config_path)
