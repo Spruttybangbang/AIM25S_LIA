@@ -199,22 +199,42 @@ def read_company_ids(csv_path: str) -> List[int]:
 
 def flatten_scb_result(scb_company: Dict) -> Dict:
     """
-    Platta ut SCB-resultat till separata kolumner istället för JSON-klump
+    Platta ut SCB-resultat till separata kolumner (samma som scb_enrichment-tabellen)
     """
     return {
-        'scb_företagsnamn': scb_company.get('Företagsnamn', ''),
-        'scb_orgnr': scb_company.get('OrgNr', ''),
-        'scb_postort': scb_company.get('PostOrt', ''),
-        'scb_kommun': scb_company.get('Kommun', ''),
-        'scb_län': scb_company.get('Län', ''),
-        'scb_adress': scb_company.get('Adress', ''),
-        'scb_postnr': scb_company.get('PostNr', ''),
-        'scb_telefon': scb_company.get('Telefon', ''),
-        'scb_sni_kod': scb_company.get('SNI2007Kod', ''),
-        'scb_sni_text': scb_company.get('SNI2007Text', ''),
-        'scb_juridisk_form': scb_company.get('JuridiskFormKod', ''),
-        'scb_antal_anställda': scb_company.get('AntalAnstallda', ''),
-        'scb_omsättning': scb_company.get('Omsattning', ''),
+        'organization_number': scb_company.get('OrgNr', ''),
+        'scb_company_name': scb_company.get('Företagsnamn', ''),
+        'co_address': scb_company.get('CoAdress', ''),
+        'post_address': scb_company.get('PostAdress', '') or scb_company.get('Adress', ''),
+        'post_code': scb_company.get('PostNr', ''),
+        'post_city': scb_company.get('PostOrt', ''),
+        'municipality_code': scb_company.get('KommunKod', ''),
+        'municipality': scb_company.get('Kommun', ''),
+        'county_code': scb_company.get('LänsKod', '') or scb_company.get('LanskKod', ''),
+        'county': scb_company.get('Län', '') or scb_company.get('Lans', ''),
+        'num_workplaces': scb_company.get('AntalArbetsställen', '') or scb_company.get('AntalArbetstallen', ''),
+        'employee_size_code': scb_company.get('StorleksklassKod', ''),
+        'employee_size': scb_company.get('Storleksklass', ''),
+        'company_status_code': scb_company.get('FöretagsstatusKod', '') or scb_company.get('ForetagsstatusKod', ''),
+        'company_status': scb_company.get('Företagsstatus', '') or scb_company.get('Foretagsstatus', ''),
+        'legal_form_code': scb_company.get('JuridiskFormKod', ''),
+        'legal_form': scb_company.get('JuridiskForm', ''),
+        'start_date': scb_company.get('StartDatum', ''),
+        'registration_date': scb_company.get('RegistreringsDatum', ''),
+        'industry_1_code': scb_company.get('SNI2007Kod', ''),
+        'industry_1': scb_company.get('SNI2007Text', ''),
+        'industry_2_code': scb_company.get('SNI2007Kod2', ''),
+        'industry_2': scb_company.get('SNI2007Text2', ''),
+        'revenue_year': scb_company.get('OmsättningÅr', '') or scb_company.get('OmsattningAr', ''),
+        'revenue_size_code': scb_company.get('OmsättningsklassKod', '') or scb_company.get('OmsattningsklassKod', ''),
+        'revenue_size': scb_company.get('Omsättningsklass', '') or scb_company.get('Omsattningsklass', ''),
+        'phone': scb_company.get('Telefon', ''),
+        'email': scb_company.get('Epost', '') or scb_company.get('Email', ''),
+        'employer_status_code': scb_company.get('ArbetsgivarstatusKod', ''),
+        'employer_status': scb_company.get('Arbetsgivarstatus', ''),
+        'vat_status_code': scb_company.get('MomsstatusKod', ''),
+        'vat_status': scb_company.get('Momsstatus', ''),
+        'export_import': scb_company.get('ExportImport', ''),
     }
 
 def save_matches_to_csv(matches: List[Dict], output_path: str):
@@ -224,7 +244,9 @@ def save_matches_to_csv(matches: List[Dict], output_path: str):
         return
 
     # Kombinera alla möjliga kolumner från både company och SCB
+    # (Samma som scb_enrichment-tabellen)
     fieldnames = [
+        # Company info
         'company_id',
         'company_name',
         'company_type',
@@ -232,19 +254,40 @@ def save_matches_to_csv(matches: List[Dict], output_path: str):
         'company_location_city',
         'company_owner',
         'fuzzy_score',
-        'scb_företagsnamn',
-        'scb_orgnr',
-        'scb_postort',
-        'scb_kommun',
-        'scb_län',
-        'scb_adress',
-        'scb_postnr',
-        'scb_telefon',
-        'scb_sni_kod',
-        'scb_sni_text',
-        'scb_juridisk_form',
-        'scb_antal_anställda',
-        'scb_omsättning',
+        # SCB enrichment (alla fält)
+        'organization_number',
+        'scb_company_name',
+        'co_address',
+        'post_address',
+        'post_code',
+        'post_city',
+        'municipality_code',
+        'municipality',
+        'county_code',
+        'county',
+        'num_workplaces',
+        'employee_size_code',
+        'employee_size',
+        'company_status_code',
+        'company_status',
+        'legal_form_code',
+        'legal_form',
+        'start_date',
+        'registration_date',
+        'industry_1_code',
+        'industry_1',
+        'industry_2_code',
+        'industry_2',
+        'revenue_year',
+        'revenue_size_code',
+        'revenue_size',
+        'phone',
+        'email',
+        'employer_status_code',
+        'employer_status',
+        'vat_status_code',
+        'vat_status',
+        'export_import',
     ]
 
     with open(output_path, 'w', newline='', encoding='utf-8-sig') as f:
@@ -375,32 +418,24 @@ def process_company(company: Dict, confirmed_matches: List[Dict]) -> bool:
             selected = candidates[choice_num - 1]
             scb_company, score = selected
 
-            # Bekräfta valet
-            print(f"\n✅ Du valde: {scb_company.get('Företagsnamn')}")
-            confirm = input("Bekräfta? (y/n): ").strip().lower()
+            # Platta ut SCB-data
+            scb_flat = flatten_scb_result(scb_company)
 
-            if confirm == 'y':
-                # Platta ut SCB-data
-                scb_flat = flatten_scb_result(scb_company)
+            # Skapa matchad rad
+            match = {
+                'company_id': company['id'],
+                'company_name': company['name'],
+                'company_type': company['type'],
+                'company_website': company.get('website', ''),
+                'company_location_city': company.get('location_city', ''),
+                'company_owner': company.get('owner', ''),
+                'fuzzy_score': score,
+                **scb_flat
+            }
 
-                # Skapa matchad rad
-                match = {
-                    'company_id': company['id'],
-                    'company_name': company['name'],
-                    'company_type': company['type'],
-                    'company_website': company.get('website', ''),
-                    'company_location_city': company.get('location_city', ''),
-                    'company_owner': company.get('owner', ''),
-                    'fuzzy_score': score,
-                    **scb_flat
-                }
-
-                confirmed_matches.append(match)
-                print(f"\n✅ Match sparad! (Totalt: {len(confirmed_matches)} bekräftade)")
-                return True  # Gå vidare till nästa företag
-            else:
-                print("❌ Val ej bekräftat, försök igen")
-                continue
+            confirmed_matches.append(match)
+            print(f"\n✅ Match sparad: {scb_company.get('Företagsnamn')} (Totalt: {len(confirmed_matches)} bekräftade)")
+            return True  # Gå vidare till nästa företag
 
         elif action == 'skip':
             print("⏭️  Hoppar över detta företag")
