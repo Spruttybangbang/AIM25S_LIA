@@ -79,10 +79,16 @@ DB_PATH, CERT_PATH = load_config()
 # =============================================================================
 
 def search_scb(search_term: str) -> List[Dict]:
-    """Sök företag i SCB"""
+    """
+    Sök företag i SCB med begränsning till max 5 resultat
+
+    VIKTIGT: SCB API har en 2000-radgräns. Vi begränsar till 5 träffar
+    för att inte överbelasta API:et och hålla sökningarna snabba.
+    """
     payload = {
         "Företagsstatus": "1",
         "Registreringsstatus": "1",
+        "MaxRowLimit": 5,  # Begränsa till max 5 resultat från SCB
         "variabler": [
             {
                 "Varde1": search_term,
@@ -97,6 +103,12 @@ def search_scb(search_term: str) -> List[Dict]:
         response = requests.post(API_URL, json=payload, cert=CERT_PATH, timeout=30)
         response.raise_for_status()
         results = response.json()
+
+        # Extra säkerhetscheck: ta max 5 även om SCB returnerar fler
+        if len(results) > 5:
+            print(f"  ⚠️  SCB returnerade {len(results)} resultat trots MaxRowLimit, tar första 5")
+            results = results[:5]
+
         return results
     except Exception as e:
         print(f"  ❌ API-fel: {e}")
@@ -303,7 +315,7 @@ def save_matches_to_csv(matches: List[Dict], output_path: str):
 # =============================================================================
 
 def display_candidates(candidates: List[Tuple[Dict, int]], our_name: str):
-    """Visa kandidater för användaren (max 5)"""
+    """Visa alla kandidater (max 5 från SCB API)"""
     print(f"\n{'='*70}")
     print(f"Sökresultat för: {our_name}")
     print('='*70)
@@ -312,14 +324,8 @@ def display_candidates(candidates: List[Tuple[Dict, int]], our_name: str):
         print("❌ Inga resultat hittades")
         return
 
-    # Varning om många träffar från SCB
-    if len(candidates) > 100:
-        print(f"⚠️  SCB returnerade {len(candidates)} träffar - mycket ovanligt!")
-        print("    Överväg att göra en ny sökning med mer specifikt namn.")
-
-    # Visa top 5 (max som användaren kan välja)
-    max_to_show = 5
-    for i, (company, score) in enumerate(candidates[:max_to_show], 1):
+    # Visa alla kandidater (max 5)
+    for i, (company, score) in enumerate(candidates, 1):
         name = company.get('Företagsnamn', '')
         city = company.get('PostOrt', '')
         orgnr = company.get('OrgNr', '')
@@ -328,9 +334,6 @@ def display_candidates(candidates: List[Tuple[Dict, int]], our_name: str):
         print(f"    Ort: {city}")
         print(f"    Org.nr: {orgnr}")
         print(f"    Score: {score}/100")
-
-    if len(candidates) > max_to_show:
-        print(f"\n... och {len(candidates) - max_to_show} fler träffar (visar bara topp {max_to_show})")
 
 def get_user_choice(num_candidates: int) -> Tuple[str, Optional[int]]:
     """

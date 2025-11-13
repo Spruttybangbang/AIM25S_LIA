@@ -84,7 +84,7 @@ Välj alternativ:
 Ditt val: _
 ```
 
-**OBS:** Scriptet visar max 5 kandidater (de bästa matcherna) för att hålla det enkelt och snabbt. Om du får många träffar (>100), rekommenderas att göra en ny sökning med mer specifikt namn.
+**OBS:** Scriptet begränsar SCB API-anropet till **max 5 resultat** (via `MaxRowLimit`-parameter). Detta förhindrar överbelastning av SCB API och håller sökningarna snabba. Om de 5 resultaten inte innehåller rätt företag, använd alternativet [n] för att söka med mer specifikt namn (t.ex. lägg till "AB" eller stad).
 
 ### 4. Alternativ
 
@@ -180,11 +180,12 @@ company_id,company_name,fuzzy_score,organization_number,scb_company_name,post_ci
 
 ## Tips
 
-### Hantera många träffar
-Om SCB returnerar många träffar (>100), överväg att:
+### Om de 5 resultaten inte räcker
+Scriptet begränsar till max 5 resultat från SCB. Om rätt företag inte finns bland dessa:
+- Använd alternativet [n] för ny sökning med mer specifikt namn
 - Lägg till "AB" i söktermen: `Företagsnamn AB`
 - Lägg till stad: `Företagsnamn Stockholm`
-- Använd alternativet "n" för ny sökning
+- Lägg till org.nr om känt: `Företagsnamn 556123-4567`
 
 ### Best practices
 1. Börja med ett litet test (5-10 företag)
