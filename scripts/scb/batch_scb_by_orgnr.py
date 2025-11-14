@@ -3,16 +3,16 @@
 Batch SCB API Query by Organization Number
 ==========================================
 
-Läser CSV med organisationsnummer och hämtar alla tillgängliga variabler från SCB.
-Sparar lyckade requests i en CSV och misslyckade i en annan.
+Läser CSV med organisationsnummer och företagsnamn, hämtar alla tillgängliga
+variabler från SCB. Söker på företagsnamn och validerar organisationsnummer.
 
 Usage:
     python3 batch_scb_by_orgnr.py input.csv
 
 Input CSV-format:
-    organization_number
-    5567037485
-    5590691811
+    organization_number,company_name
+    5567037485,Spotify AB
+    5590691811,Lexplore AB
     ...
 
 Output:
@@ -78,9 +78,12 @@ CERT_PATH = load_config()
 # SCB API
 # =============================================================================
 
-def search_scb_by_orgnr(org_nr: str) -> Tuple[bool, Optional[Dict], Optional[str]]:
+def search_scb_by_orgnr(org_nr: str, company_name: str) -> Tuple[bool, Optional[Dict], Optional[str]]:
     """
-    Sök företag i SCB med organisationsnummer
+    Sök företag i SCB med företagsnamn och validera organisationsnummer
+
+    SCB API stödjer inte direktsökning på org.nr, så vi söker på företagsnamn
+    och validerar sedan att rätt org.nr hittades i resultatet.
 
     Returns:
         (success: bool, scb_data: Dict or None, error_message: str or None)
@@ -88,17 +91,16 @@ def search_scb_by_orgnr(org_nr: str) -> Tuple[bool, Optional[Dict], Optional[str
     # Normalisera organisationsnummer (ta bort bindestreck)
     org_nr_clean = org_nr.replace('-', '').strip()
 
-    # Prova att söka med organisationsnummer som variabel
-    # SCB API kan använda olika variabelnamn, vi provar "OrgNr"
+    # Sök på företagsnamn (det enda som fungerar i SCB API)
     payload = {
         "Företagsstatus": "1",  # Verksamma företag
         "Registreringsstatus": "1",  # Registrerade
         "variabler": [
             {
-                "Varde1": org_nr_clean,
+                "Varde1": company_name,
                 "Varde2": "",
-                "Operator": "Lika",  # Exakt matchning
-                "Variabel": "OrgNr"
+                "Operator": "Innehaller",  # Partiell matchning
+                "Variabel": "Namn"
             }
         ]
     }
@@ -112,16 +114,20 @@ def search_scb_by_orgnr(org_nr: str) -> Tuple[bool, Optional[Dict], Optional[str
         if not isinstance(results, list):
             return False, None, f"Oväntat format från SCB: {type(results)}"
 
-        # Om inga resultat, returnera som ej hittad
+        # Om inga resultat
         if len(results) == 0:
-            return False, None, "Inget företag hittades med detta organisationsnummer"
+            return False, None, f"Inget företag hittades för '{company_name}'"
 
-        # Om flera resultat (ovanligt med org.nr), ta första
-        if len(results) > 1:
-            print(f"  ⚠️  Flera träffar för {org_nr} - tar första matchningen")
+        # Sök efter rätt org.nr i resultaten
+        for result in results:
+            result_orgnr = result.get('OrgNr', '').replace('-', '').strip()
+            if result_orgnr == org_nr_clean:
+                # Hittade rätt företag!
+                return True, result, None
 
-        # Returnera första träffen
-        return True, results[0], None
+        # Om vi kommer hit fanns inga matchande org.nr
+        result_orgnrs = [r.get('OrgNr', 'N/A') for r in results[:5]]
+        return False, None, f"Hittade {len(results)} företag med namnet '{company_name}' men inget med org.nr {org_nr}. Hittade org.nr: {', '.join(result_orgnrs)}"
 
     except requests.exceptions.HTTPError as e:
         return False, None, f"HTTP-fel: {e.response.status_code} - {e.response.text[:200]}"
@@ -177,20 +183,23 @@ def flatten_scb_result(scb_company: Dict) -> Dict:
 # CSV
 # =============================================================================
 
-def read_organization_numbers(csv_path: str) -> List[str]:
-    """Läs organisationsnummer från CSV"""
-    org_numbers = []
+def read_company_data(csv_path: str) -> List[Tuple[str, str]]:
+    """Läs organisationsnummer och företagsnamn från CSV"""
+    companies = []
     with open(csv_path, 'r', encoding='utf-8') as f:
         reader = csv.DictReader(f)
         for row in reader:
             try:
                 org_nr = row['organization_number'].strip()
-                if org_nr:
-                    org_numbers.append(org_nr)
+                company_name = row['company_name'].strip()
+                if org_nr and company_name:
+                    companies.append((org_nr, company_name))
+                else:
+                    print(f"⚠️  Hoppar över rad med tom data: {row}")
             except KeyError as e:
-                print(f"⚠️  CSV måste ha kolumnen 'organization_number'. Hittade: {list(row.keys())}")
+                print(f"⚠️  CSV måste ha kolumnerna 'organization_number' och 'company_name'. Hittade: {list(row.keys())}")
                 sys.exit(1)
-    return org_numbers
+    return companies
 
 def save_success_to_csv(success_data: List[Dict], output_path: str):
     """Spara lyckade requests till CSV"""
@@ -277,10 +286,10 @@ Användning:
     python3 batch_scb_by_orgnr.py input.csv
 
 Input CSV-format:
-    organization_number
-    5567037485
-    5590691811
-    5592675952
+    organization_number,company_name
+    5567037485,Spotify AB
+    5590691811,Lexplore AB
+    5592675952,LINKAI Technologies AB
 
 Output:
     - scb_success_TIMESTAMP.csv: Lyckade requests med all SCB-data
@@ -290,19 +299,19 @@ Output:
 
     csv_path = sys.argv[1]
 
-    # Läs organisationsnummer
+    # Läs företagsdata
     if not Path(csv_path).exists():
         print(f"❌ Filen hittades inte: {csv_path}")
         sys.exit(1)
 
-    print(f"📖 Läser organisationsnummer från: {csv_path}")
-    org_numbers = read_organization_numbers(csv_path)
+    print(f"📖 Läser företagsdata från: {csv_path}")
+    companies = read_company_data(csv_path)
 
-    if not org_numbers:
-        print("❌ Inga giltiga organisationsnummer hittades i CSV:n")
+    if not companies:
+        print("❌ Inga giltiga företag hittades i CSV:n")
         sys.exit(1)
 
-    print(f"✅ Hittade {len(org_numbers)} organisationsnummer att processa")
+    print(f"✅ Hittade {len(companies)} företag att processa")
 
     # Skapa output-filer
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -313,7 +322,7 @@ Output:
     print(f"💾 Misslyckade requests sparas till: {failed_path}")
 
     # Bekräfta start
-    response = input(f"\nVill du börja hämta data för {len(org_numbers)} organisationsnummer? (y/n): ").strip().lower()
+    response = input(f"\nVill du börja hämta data för {len(companies)} företag? (y/n): ").strip().lower()
     if response != 'y':
         print("Avbryter...")
         sys.exit(0)
@@ -322,27 +331,27 @@ Output:
     success_data = []
     failed_data = []
 
-    # Processa varje organisationsnummer
+    # Processa varje företag
     print(f"\n{'='*70}")
     print("STARTAR BATCH-KÖRNING")
     print('='*70)
 
     start_time = time.time()
 
-    for i, org_nr in enumerate(org_numbers, 1):
-        print(f"\n[{i}/{len(org_numbers)}] {org_nr}")
+    for i, (org_nr, company_name) in enumerate(companies, 1):
+        print(f"\n[{i}/{len(companies)}] {company_name} ({org_nr})")
 
         # Sök i SCB
-        success, scb_data, error_msg = search_scb_by_orgnr(org_nr)
+        success, scb_data, error_msg = search_scb_by_orgnr(org_nr, company_name)
 
         if success and scb_data:
             # Platta ut SCB-data
             flat_data = flatten_scb_result(scb_data)
             success_data.append(flat_data)
 
-            company_name = scb_data.get('Företagsnamn', 'N/A')
+            scb_name = scb_data.get('Företagsnamn', 'N/A')
             city = scb_data.get('PostOrt', 'N/A')
-            print(f"  ✅ {company_name} - {city}")
+            print(f"  ✅ {scb_name} - {city}")
         else:
             # Spara fel
             failed_data.append({
@@ -353,7 +362,7 @@ Output:
             print(f"  ❌ {error_msg}")
 
         # Rate limiting (utom på sista)
-        if i < len(org_numbers):
+        if i < len(companies):
             time.sleep(RATE_LIMIT_DELAY)
 
     end_time = time.time()
@@ -371,11 +380,11 @@ Output:
     print(f"\n{'='*70}")
     print("SAMMANFATTNING")
     print('='*70)
-    print(f"Totalt organisationsnummer: {len(org_numbers)}")
-    print(f"Lyckade requests: {len(success_data)} ({len(success_data)/len(org_numbers)*100:.1f}%)")
-    print(f"Misslyckade requests: {len(failed_data)} ({len(failed_data)/len(org_numbers)*100:.1f}%)")
+    print(f"Totalt företag: {len(companies)}")
+    print(f"Lyckade requests: {len(success_data)} ({len(success_data)/len(companies)*100:.1f}%)")
+    print(f"Misslyckade requests: {len(failed_data)} ({len(failed_data)/len(companies)*100:.1f}%)")
     print(f"Körtid: {duration:.1f} sekunder ({duration/60:.1f} minuter)")
-    print(f"Genomsnittlig tid per request: {duration/len(org_numbers):.2f} sekunder")
+    print(f"Genomsnittlig tid per request: {duration/len(companies):.2f} sekunder")
     print(f"\n✅ Klart!")
 
 if __name__ == "__main__":
