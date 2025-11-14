@@ -1,23 +1,23 @@
 #!/usr/bin/env python3
 """
-Batch SCB API Query by Organization Number
-==========================================
+Batch SCB Matcher - Automatisk version av interactive_scb_matcher
+=================================================================
 
-Läser CSV med organisationsnummer och företagsnamn, hämtar alla tillgängliga
-variabler från SCB. Söker på företagsnamn och validerar organisationsnummer.
+Läser CSV med företagsnamn och hämtar automatiskt SCB-data för varje företag.
+Tar första (bästa) matchningen baserat på fuzzy score.
 
 Usage:
     python3 batch_scb_by_orgnr.py input.csv
 
 Input CSV-format:
-    organization_number,company_name
-    5567037485,Spotify AB
-    5590691811,Lexplore AB
+    company_name
+    Spotify AB
+    Lexplore AB
     ...
 
 Output:
-    - scb_success_TIMESTAMP.csv: Alla lyckade requests med SCB-data
-    - scb_failed_TIMESTAMP.csv: Alla misslyckade requests med felmeddelanden
+    - scb_success_TIMESTAMP.csv: Alla lyckade matcher med SCB-data
+    - scb_failed_TIMESTAMP.csv: Alla misslyckade matcher med felmeddelanden
 """
 
 import configparser
@@ -30,12 +30,18 @@ from datetime import datetime
 from pathlib import Path
 from typing import List, Dict, Tuple, Optional
 
+try:
+    from fuzzywuzzy import fuzz
+except ImportError as e:
+    raise SystemExit("Saknar 'fuzzywuzzy'. Installera: pip install fuzzywuzzy python-Levenshtein") from e
+
 # =============================================================================
 # KONFIGURATION
 # =============================================================================
 
 API_URL = 'https://privateapi.scb.se/nv0101/v1/sokpavar/api/je/HamtaForetag'
-RATE_LIMIT_DELAY = 0.5  # Sekunder mellan anrop (SCB rekommenderar max 2 req/s)
+RATE_LIMIT_DELAY = 0.5  # Sekunder mellan anrop
+FUZZY_THRESHOLD = 85  # Minsta fuzzy score för automatisk matchning
 
 def load_config():
     """Load configuration from config.ini or use defaults"""
@@ -43,13 +49,12 @@ def load_config():
 
     # Leta efter config.ini i olika platser
     possible_paths = [
-        Path(__file__).parent.parent / "config.ini",  # scripts/config.ini
-        Path(__file__).parent / "config.ini",  # scripts/scb/config.ini
+        Path(__file__).parent.parent / "config.ini",
+        Path(__file__).parent / "config.ini",
     ]
 
-    # Defaults (relativa paths från scripts/scb/)
+    # Default cert path
     default_cert = "../../../SCB/certifikat/Certifikat_SokPaVar_A00592_2025-10-29_09-27-36Z.pem"
-
     cert_path = default_cert
 
     for config_path in possible_paths:
@@ -67,7 +72,6 @@ def load_config():
 def validate_cert_path(cert_path: str):
     """Validera att certifikat finns"""
     cert = Path(cert_path)
-
     if not cert.exists():
         raise FileNotFoundError(f"Certifikat hittades inte: {cert}")
 
@@ -75,31 +79,22 @@ def validate_cert_path(cert_path: str):
 CERT_PATH = load_config()
 
 # =============================================================================
-# SCB API
+# SCB API (kopierat från interactive_scb_matcher.py)
 # =============================================================================
 
-def search_scb_by_orgnr(org_nr: str, company_name: str) -> Tuple[bool, Optional[Dict], Optional[str]]:
+def search_scb(search_term: str) -> List[Dict]:
     """
-    Sök företag i SCB med företagsnamn och validera organisationsnummer
-
-    SCB API stödjer inte direktsökning på org.nr, så vi söker på företagsnamn
-    och validerar sedan att rätt org.nr hittades i resultatet.
-
-    Returns:
-        (success: bool, scb_data: Dict or None, error_message: str or None)
+    Sök företag i SCB
+    Exakt samma som i interactive_scb_matcher.py
     """
-    # Normalisera organisationsnummer (ta bort bindestreck)
-    org_nr_clean = org_nr.replace('-', '').strip()
-
-    # Sök på företagsnamn (det enda som fungerar i SCB API)
     payload = {
-        "Företagsstatus": "1",  # Verksamma företag
-        "Registreringsstatus": "1",  # Registrerade
+        "Företagsstatus": "1",
+        "Registreringsstatus": "1",
         "variabler": [
             {
-                "Varde1": company_name,
+                "Varde1": search_term,
                 "Varde2": "",
-                "Operator": "Innehaller",  # Partiell matchning
+                "Operator": "Innehaller",
                 "Variabel": "Namn"
             }
         ]
@@ -110,38 +105,74 @@ def search_scb_by_orgnr(org_nr: str, company_name: str) -> Tuple[bool, Optional[
         response.raise_for_status()
         results = response.json()
 
-        # Validera att results är en lista
         if not isinstance(results, list):
-            return False, None, f"Oväntat format från SCB: {type(results)}"
+            print(f"  ⚠️  SCB returnerade oväntat format: {type(results)}")
+            return []
 
-        # Om inga resultat
-        if len(results) == 0:
-            return False, None, f"Inget företag hittades för '{company_name}'"
-
-        # Sök efter rätt org.nr i resultaten
-        for result in results:
-            result_orgnr = result.get('OrgNr', '').replace('-', '').strip()
-            if result_orgnr == org_nr_clean:
-                # Hittade rätt företag!
-                return True, result, None
-
-        # Om vi kommer hit fanns inga matchande org.nr
-        result_orgnrs = [r.get('OrgNr', 'N/A') for r in results[:5]]
-        return False, None, f"Hittade {len(results)} företag med namnet '{company_name}' men inget med org.nr {org_nr}. Hittade org.nr: {', '.join(result_orgnrs)}"
-
-    except requests.exceptions.HTTPError as e:
-        return False, None, f"HTTP-fel: {e.response.status_code} - {e.response.text[:200]}"
+        return results
     except requests.exceptions.RequestException as e:
-        return False, None, f"Nätverksfel: {str(e)[:200]}"
+        print(f"  ❌ Nätverksfel: {e}")
+        return []
     except ValueError as e:
-        return False, None, f"JSON-parsningsfel: {str(e)[:200]}"
+        print(f"  ❌ JSON-parsningsfel: {e}")
+        return []
     except Exception as e:
-        return False, None, f"Oväntat fel: {str(e)[:200]}"
+        print(f"  ❌ Oväntat fel: {e}")
+        return []
+
+def normalize_name(name: str) -> str:
+    """
+    Normalisera företagsnamn för fuzzy matching
+    Exakt samma som i interactive_scb_matcher.py
+    """
+    if not name:
+        return ""
+
+    name = name.lower().strip()
+
+    # Ta bort domännamn
+    for domain in ['.com', '.se', '.ai', '.io', '.org', '.net']:
+        name = name.replace(domain, '')
+
+    # Ta bort suffix
+    suffixes = [
+        ' ab', ' aktiebolag', ' ltd', ' limited', ' inc', ' incorporated',
+        ' i stockholm', ' i göteborg', ' i malmö',
+        ' sweden', ' sverige'
+    ]
+
+    for suffix in suffixes:
+        if name.endswith(suffix):
+            name = name[:-len(suffix)]
+
+    return name.strip()
+
+def rank_candidates(our_name: str, scb_results: List[Dict]) -> List[Tuple[Dict, int]]:
+    """
+    Rankar SCB-kandidater baserat på fuzzy score
+    Exakt samma som i interactive_scb_matcher.py
+    """
+    if not scb_results:
+        return []
+
+    our_normalized = normalize_name(our_name)
+
+    ranked = []
+    for company in scb_results:
+        scb_name = company.get('Företagsnamn', '')
+        scb_normalized = normalize_name(scb_name)
+        score = fuzz.ratio(our_normalized, scb_normalized)
+        ranked.append((company, score))
+
+    # Sortera efter score (högst först)
+    ranked.sort(key=lambda x: x[1], reverse=True)
+
+    return ranked
 
 def flatten_scb_result(scb_company: Dict) -> Dict:
     """
     Platta ut SCB-resultat till separata kolumner
-    Samma format som scb_matches_confirmed CSV
+    Exakt samma som i interactive_scb_matcher.py
     """
     return {
         'organization_number': scb_company.get('OrgNr', ''),
@@ -183,32 +214,31 @@ def flatten_scb_result(scb_company: Dict) -> Dict:
 # CSV
 # =============================================================================
 
-def read_company_data(csv_path: str) -> List[Tuple[str, str]]:
-    """Läs organisationsnummer och företagsnamn från CSV"""
-    companies = []
+def read_company_names(csv_path: str) -> List[str]:
+    """Läs företagsnamn från CSV"""
+    names = []
     with open(csv_path, 'r', encoding='utf-8') as f:
         reader = csv.DictReader(f)
         for row in reader:
             try:
-                org_nr = row['organization_number'].strip()
-                company_name = row['company_name'].strip()
-                if org_nr and company_name:
-                    companies.append((org_nr, company_name))
-                else:
-                    print(f"⚠️  Hoppar över rad med tom data: {row}")
-            except KeyError as e:
-                print(f"⚠️  CSV måste ha kolumnerna 'organization_number' och 'company_name'. Hittade: {list(row.keys())}")
+                name = row['company_name'].strip()
+                if name:
+                    names.append(name)
+            except KeyError:
+                print(f"⚠️  CSV måste ha kolumnen 'company_name'. Hittade: {list(row.keys())}")
                 sys.exit(1)
-    return companies
+    return names
 
 def save_success_to_csv(success_data: List[Dict], output_path: str):
-    """Spara lyckade requests till CSV"""
+    """Spara lyckade matcher till CSV (samma format som interactive_scb_matcher)"""
     if not success_data:
-        print("⚠️  Inga lyckade requests att spara")
+        print("⚠️  Inga lyckade matcher att spara")
         return
 
-    # Alla SCB-kolumner (samma som scb_enrichment-tabellen)
+    # Samma kolumner som interactive_scb_matcher
     fieldnames = [
+        'company_name',
+        'fuzzy_score',
         'organization_number',
         'scb_company_name',
         'co_address',
@@ -249,22 +279,22 @@ def save_success_to_csv(success_data: List[Dict], output_path: str):
         writer.writeheader()
         writer.writerows(success_data)
 
-    print(f"\n✅ Sparade {len(success_data)} lyckade requests till: {output_path}")
+    print(f"\n✅ Sparade {len(success_data)} lyckade matcher till: {output_path}")
 
 def save_failed_to_csv(failed_data: List[Dict], output_path: str):
-    """Spara misslyckade requests till CSV"""
+    """Spara misslyckade matcher till CSV"""
     if not failed_data:
-        print("✅ Inga misslyckade requests!")
+        print("✅ Inga misslyckade matcher!")
         return
 
-    fieldnames = ['organization_number', 'error_message', 'timestamp']
+    fieldnames = ['company_name', 'reason', 'timestamp']
 
     with open(output_path, 'w', newline='', encoding='utf-8-sig') as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(failed_data)
 
-    print(f"⚠️  Sparade {len(failed_data)} misslyckade requests till: {output_path}")
+    print(f"⚠️  Sparade {len(failed_data)} misslyckade matcher till: {output_path}")
 
 # =============================================================================
 # MAIN
@@ -286,43 +316,46 @@ Användning:
     python3 batch_scb_by_orgnr.py input.csv
 
 Input CSV-format:
-    organization_number,company_name
-    5567037485,Spotify AB
-    5590691811,Lexplore AB
-    5592675952,LINKAI Technologies AB
+    company_name
+    Spotify AB
+    Lexplore AB
+    Mavenoid AB
 
 Output:
-    - scb_success_TIMESTAMP.csv: Lyckade requests med all SCB-data
-    - scb_failed_TIMESTAMP.csv: Misslyckade requests med felmeddelanden
+    - scb_success_TIMESTAMP.csv: Lyckade matcher med all SCB-data
+    - scb_failed_TIMESTAMP.csv: Misslyckade matcher med felmeddelanden
+
+Observera: Tar automatiskt första (bästa) matchningen med fuzzy score >= 85
 """)
         sys.exit(0)
 
     csv_path = sys.argv[1]
 
-    # Läs företagsdata
+    # Läs företagsnamn
     if not Path(csv_path).exists():
         print(f"❌ Filen hittades inte: {csv_path}")
         sys.exit(1)
 
-    print(f"📖 Läser företagsdata från: {csv_path}")
-    companies = read_company_data(csv_path)
+    print(f"📖 Läser företagsnamn från: {csv_path}")
+    company_names = read_company_names(csv_path)
 
-    if not companies:
-        print("❌ Inga giltiga företag hittades i CSV:n")
+    if not company_names:
+        print("❌ Inga giltiga företagsnamn hittades i CSV:n")
         sys.exit(1)
 
-    print(f"✅ Hittade {len(companies)} företag att processa")
+    print(f"✅ Hittade {len(company_names)} företag att processa")
 
     # Skapa output-filer
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     success_path = f"scb_success_{timestamp}.csv"
     failed_path = f"scb_failed_{timestamp}.csv"
 
-    print(f"\n💾 Lyckade requests sparas till: {success_path}")
-    print(f"💾 Misslyckade requests sparas till: {failed_path}")
+    print(f"\n💾 Lyckade matcher sparas till: {success_path}")
+    print(f"💾 Misslyckade matcher sparas till: {failed_path}")
+    print(f"🎯 Fuzzy threshold: {FUZZY_THRESHOLD}% (tar automatiskt bästa matchningen)")
 
     # Bekräfta start
-    response = input(f"\nVill du börja hämta data för {len(companies)} företag? (y/n): ").strip().lower()
+    response = input(f"\nVill du börja hämta data för {len(company_names)} företag? (y/n): ").strip().lower()
     if response != 'y':
         print("Avbryter...")
         sys.exit(0)
@@ -338,31 +371,71 @@ Output:
 
     start_time = time.time()
 
-    for i, (org_nr, company_name) in enumerate(companies, 1):
-        print(f"\n[{i}/{len(companies)}] {company_name} ({org_nr})")
+    for i, company_name in enumerate(company_names, 1):
+        print(f"\n[{i}/{len(company_names)}] {company_name}")
 
         # Sök i SCB
-        success, scb_data, error_msg = search_scb_by_orgnr(org_nr, company_name)
+        scb_results = search_scb(company_name)
 
-        if success and scb_data:
-            # Platta ut SCB-data
-            flat_data = flatten_scb_result(scb_data)
-            success_data.append(flat_data)
-
-            scb_name = scb_data.get('Företagsnamn', 'N/A')
-            city = scb_data.get('PostOrt', 'N/A')
-            print(f"  ✅ {scb_name} - {city}")
-        else:
-            # Spara fel
+        if not scb_results:
             failed_data.append({
-                'organization_number': org_nr,
-                'error_message': error_msg or 'Okänt fel',
+                'company_name': company_name,
+                'reason': 'Inga resultat från SCB',
                 'timestamp': datetime.now().isoformat()
             })
-            print(f"  ❌ {error_msg}")
+            print(f"  ❌ Inga resultat från SCB")
+            if i < len(company_names):
+                time.sleep(RATE_LIMIT_DELAY)
+            continue
 
-        # Rate limiting (utom på sista)
-        if i < len(companies):
+        # Ranka kandidater
+        candidates = rank_candidates(company_name, scb_results)
+
+        if not candidates:
+            failed_data.append({
+                'company_name': company_name,
+                'reason': 'Kunde inte ranka resultat',
+                'timestamp': datetime.now().isoformat()
+            })
+            print(f"  ❌ Kunde inte ranka resultat")
+            if i < len(company_names):
+                time.sleep(RATE_LIMIT_DELAY)
+            continue
+
+        # Ta första (bästa) matchningen
+        best_match, score = candidates[0]
+
+        # Kontrollera om score är över threshold
+        if score < FUZZY_THRESHOLD:
+            failed_data.append({
+                'company_name': company_name,
+                'reason': f'Låg fuzzy score: {score} < {FUZZY_THRESHOLD}. Bästa kandidat: {best_match.get("Företagsnamn", "N/A")}',
+                'timestamp': datetime.now().isoformat()
+            })
+            print(f"  ⚠️  Låg score: {score} < {FUZZY_THRESHOLD}")
+            print(f"      Bästa kandidat: {best_match.get('Företagsnamn', 'N/A')}")
+            if i < len(company_names):
+                time.sleep(RATE_LIMIT_DELAY)
+            continue
+
+        # Platta ut SCB-data
+        scb_flat = flatten_scb_result(best_match)
+
+        # Skapa matchad rad
+        match = {
+            'company_name': company_name,
+            'fuzzy_score': score,
+            **scb_flat
+        }
+
+        success_data.append(match)
+
+        scb_name = best_match.get('Företagsnamn', 'N/A')
+        city = best_match.get('PostOrt', 'N/A')
+        print(f"  ✅ {scb_name} - {city} (score: {score})")
+
+        # Rate limiting
+        if i < len(company_names):
             time.sleep(RATE_LIMIT_DELAY)
 
     end_time = time.time()
@@ -380,11 +453,11 @@ Output:
     print(f"\n{'='*70}")
     print("SAMMANFATTNING")
     print('='*70)
-    print(f"Totalt företag: {len(companies)}")
-    print(f"Lyckade requests: {len(success_data)} ({len(success_data)/len(companies)*100:.1f}%)")
-    print(f"Misslyckade requests: {len(failed_data)} ({len(failed_data)/len(companies)*100:.1f}%)")
+    print(f"Totalt företag: {len(company_names)}")
+    print(f"Lyckade matcher: {len(success_data)} ({len(success_data)/len(company_names)*100:.1f}%)")
+    print(f"Misslyckade matcher: {len(failed_data)} ({len(failed_data)/len(company_names)*100:.1f}%)")
     print(f"Körtid: {duration:.1f} sekunder ({duration/60:.1f} minuter)")
-    print(f"Genomsnittlig tid per request: {duration/len(companies):.2f} sekunder")
+    print(f"Genomsnittlig tid per request: {duration/len(company_names):.2f} sekunder")
     print(f"\n✅ Klart!")
 
 if __name__ == "__main__":
