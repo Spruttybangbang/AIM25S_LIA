@@ -48,8 +48,19 @@ Verifierar antal företag i båda databaser.
 python scripts/database_management/verify_databases.py
 ```
 
-### check_db.py
-Snabb kontroll av antal företag i ai_companies.db.
+### check_databases.py
+Kontrollera antal företag i databaser.
+- Default: Visar båda databaser + total
+- `--companies`: Endast ai_companies.db
+- `--others`: Endast ai_others.db
+
+**Användning:**
+```bash
+python scripts/database_management/check_databases.py
+python scripts/database_management/check_databases.py --companies
+```
+
+**Ersätter:** `check_db.py` och `check_both_dbs.py` (2025-11-14)
 
 ### interactive_deduplication.py
 Interaktivt verktyg för att identifiera och hantera dubbletter.
