@@ -26,66 +26,45 @@ Detta projekt integrerar svenska AI-företag med SCB:s företagsregister för at
 ```
 AIM25S_LIA/
 ├── README.md                          # Denna fil
+├── SCRIPTS_GUIDE.md                   # Komplett guide till alla scripts
 ├── config.example.ini                 # Exempelkonfiguration
 │
 ├── databases/                         # SQLite-databaser
-│   ├── ai_companies.db               # Huvuddatabas (906 företag)
-│   └── ai_others.db                  # Sekundär databas (173 org)
+│   ├── ai_companies.db               # Huvuddatabas (724 företag)
+│   └── ai_others.db                  # Sekundär databas
 │
 ├── scripts/                          # Alla Python-scripts
 │   ├── analysis/                     # Dataanalys
-│   │   ├── analyze_database.py
-│   │   ├── analyze_duplicates.py
-│   │   ├── analyze_improvements.py
-│   │   └── detailed_pattern_analysis.py
-│   ├── database_management/          # Databashantering
-│   │   ├── delete_companies.py
-│   │   ├── move_companies_to_others.py
-│   │   ├── verify_databases.py
-│   │   ├── check_db.py
-│   │   ├── interactive_deduplication.py
-│   │   └── fas1_snabba_vinster.py
-│   ├── export/                       # Export till CSV
+│   ├── database_management/          # Databashantering & export
 │   │   ├── export_companies_to_csv.py
-│   │   └── export_companies_without_scb.py
+│   │   ├── interactive_scb_matcher.py  # Aktivt använd!
+│   │   ├── move_companies_to_others.py
+│   │   └── ... (fler scripts)
 │   └── scb/                          # SCB-integration
 │       ├── scb_integration_v2.py
 │       ├── retry_scb_search.py
 │       └── retry_no_candidates.py
 │
-├── tools/                            # SCB-hjälpverktyg
-│   ├── analyze_scb_issues.py
-│   ├── approve_good_matches.py
-│   ├── bulk_scb_matcher.py
-│   ├── explore_issues_interactive.py
-│   ├── import_bulk_fuzzy_matches.py
-│   ├── import_manual_matches.py
+├── tools/                            # SCB-hjälpverktyg (10 scripts)
+│   ├── bulk_scb_matcher.py           # Bulk-matchning
 │   ├── import_manual_matches_direct.py
-│   ├── manual_search_helper.py
-│   ├── remove_fuzzy_matches.py
-│   └── review_high_low_scores_helper.py
+│   └── ... (fler tools)
+│
+├── archive/                          # Arkiverade filer
+│   ├── migrations/                   # One-time migration scripts
+│   └── old_exports/                  # Gamla CSV-exports
 │
 ├── exports/                          # CSV-exports
-│   ├── companies_all_*.csv
-│   ├── companies_with_scb_*.csv
-│   └── companies_without_scb_*.csv
-│
 ├── results/                          # SCB-matchningsresultat
-│   ├── scb_matches.csv
-│   ├── scb_issues.csv
-│   └── ... (övriga resultatfiler)
-│
 ├── logs/                             # Loggfiler
 │
 └── docs/                             # Dokumentation
     ├── BULK_MATCHER_GUIDE.md
-    ├── BULK_MATCHING_QUICKSTART.md
-    ├── DATABAS_GENOMLYSNING_RAPPORT.md
-    ├── DEDUPLICATION_GUIDE.md
-    ├── FAS1_RESULTATRAPPORT.md
-    ├── SCB_ANALYS_README.md
-    └── SCB_INTEGRATION_V2_GUIDE.md
+    ├── SCB_INTEGRATION_V2_GUIDE.md
+    └── ... (fler guider)
 ```
+
+**📖 Se [SCRIPTS_GUIDE.md](SCRIPTS_GUIDE.md) för komplett dokumentation av alla scripts.**
 
 ## ⚙️ Konfiguration
 
