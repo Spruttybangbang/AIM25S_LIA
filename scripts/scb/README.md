@@ -35,6 +35,10 @@ Specifikt för företag där inga kandidater hittades.
 python scripts/scb/retry_no_candidates.py
 ```
 
+## Notering
+
+**web_search_orgnr_finder.py** har raderats (2025-11-14) - det var en duplikat av scriptet i arkiverat `webscraping traincrash/` projekt som övergavs p.g.a. dålig träffsäkerhet.
+
 ## SCB-data
 
 Berikad data inkluderar:
