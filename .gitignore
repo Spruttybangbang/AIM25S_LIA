@@ -47,5 +47,6 @@ scb_bulk*
 # Database backups
 *_backup_*.db
 
-# CSV exports
+# CSV exports (but allow exports/ folder to be committed)
 companies_*.csv
+!exports/*.csv
