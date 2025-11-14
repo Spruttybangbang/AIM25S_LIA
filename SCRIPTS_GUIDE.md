@@ -180,6 +180,14 @@ python scripts/database_management/export_companies_to_csv.py
 #### `tools/import_manual_matches_direct.py`
 Import av manuella SCB-matchningar från CSV till scb_enrichment tabell
 
+**Funktionalitet:**
+- Importerar DIREKT från CSV utan nya SCB API-anrop
+- Snabb offline-import av bekräftade matchningar
+- Sätter score=100 för manuella matchningar
+- Används efter interactive_scb_matcher.py
+
+**Notering:** `import_manual_matches.py` (som gjorde nya API-anrop) har tagits bort (2025-11-14) - redundant eftersom interactive_scb_matcher.py redan validerar via API.
+
 #### `tools/import_bulk_fuzzy_matches.py`
 Import av granskade fuzzy matches från bulk matcher
 
@@ -240,8 +248,21 @@ Flytta företag från ai_companies.db till ai_others.db
 #### `scripts/database_management/verify_databases.py`
 Verifiera antal företag och dataintegritet i båda databaser
 
-#### `scripts/database_management/check_db.py`
-Snabb räkning av företag i ai_companies.db
+#### `scripts/database_management/check_databases.py`
+Flexibel räkning av företag i databaser
+
+**Funktionalitet:**
+- Default: Visar båda databaser + totalt antal
+- `--companies`: Endast ai_companies.db
+- `--others`: Endast ai_others.db
+
+**Användning:**
+```bash
+python scripts/database_management/check_databases.py
+python scripts/database_management/check_databases.py --companies
+```
+
+**Ersätter:** check_db.py och check_both_dbs.py (2025-11-14)
 
 #### `scripts/database_management/fas1_snabba_vinster.py`
 Fas 1-förbättringar av datakvalitet
