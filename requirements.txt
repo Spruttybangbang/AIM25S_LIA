@@ -1,0 +1,4 @@
+# PostgreSQL adapter for Python
+psycopg2-binary==2.9.11
+
+# Note: SQLite3 is included in Python's standard library, no installation needed
