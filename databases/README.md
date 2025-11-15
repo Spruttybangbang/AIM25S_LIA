@@ -24,19 +24,24 @@ Båda databaserna delar samma schema:
 
 ## SCB-berikning - Status och historik
 
-### Senaste uppdatering: 2025-11-13/14
+### Senaste uppdatering: 2025-11-14
 
-**Uppdatering med 106 nya SCB-enrichments:**
-- Bearbetade 188 företag från 4 nya CSV-filer
-- 106 nya insättningar i `scb_enrichment`
-- 82 uppdateringar av befintliga enrichments
-- Total SCB-täckning: 60.22% → 74.86% (+14.64 pp)
+**Uppdatering med 117 nya SCB-enrichments (scb_matches_confirmed_20251114_105204.csv):**
+- 72 nya insättningar i `scb_enrichment`
+- 45 uppdateringar av befintliga enrichments
+- Total SCB-täckning: 74.86% → 84.81% (+9.95 pp)
 
-**Täckning per typ:**
-- corporation: 73.47% → 85.03% (+11.56 pp)
-- publicsector: 59.52% → 84.52% (+25.00 pp)
-- startup: 48.95% → 64.26% (+15.31 pp)
-- supplier: 71.88% → 82.50% (+10.62 pp)
+**Täckning per typ efter senaste uppdatering:**
+- corporation: 85.03% → 85.03% (+0.00 pp)
+- publicsector: 84.52% → 84.52% (+0.00 pp)
+- startup: 64.26% → 85.89% (+21.63 pp)
+- supplier: 82.50% → 82.50% (+0.00 pp)
+
+**Kumulativ förbättring sedan 2025-11-13:**
+- Totalt: 60.22% → 84.81% (+24.59 pp)
+- 542 → 614 företag med SCB-data
+- Bearbetade 305 företag från 5 CSV-filer
+- 178 nya insättningar, 127 uppdateringar
 
 ### Genomgångsstatus
 
