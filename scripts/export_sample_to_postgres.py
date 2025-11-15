@@ -6,19 +6,27 @@ import sqlite3
 import psycopg2
 from psycopg2 import sql
 import json
+import os
+import getpass
 from datetime import datetime
 
 # SQLite database path
 SQLITE_DB = 'databases/ai_companies.db'
 
 # PostgreSQL connection settings
+# On Mac with Homebrew, use your system username instead of 'postgres'
+# You can override with environment variables
 PG_CONFIG = {
-    'dbname': 'ai_companies_test',
-    'user': 'postgres',
-    'password': 'postgres',
-    'host': 'localhost',
-    'port': 5432
+    'dbname': os.getenv('PGDATABASE', 'ai_companies_test'),
+    'user': os.getenv('PGUSER', getpass.getuser()),
+    'password': os.getenv('PGPASSWORD', ''),
+    'host': os.getenv('PGHOST', 'localhost'),
+    'port': int(os.getenv('PGPORT', '5432'))
 }
+
+# Remove password from config if empty (for local trust auth)
+if not PG_CONFIG['password']:
+    del PG_CONFIG['password']
 
 def get_sample_companies(sqlite_conn, limit=30):
     """Get sample companies from SQLite"""
